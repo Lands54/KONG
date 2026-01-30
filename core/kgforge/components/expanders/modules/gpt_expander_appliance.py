@@ -1,3 +1,4 @@
+import os
 from typing import Any, Dict, Optional
 from kgforge.components.base import BaseExpander
 from kgforge.components.expanders.utils.gpt_expander import GPTExpander
@@ -16,8 +17,10 @@ class GPTExpanderAppliance(BaseExpander):
         mapped_config.update(kwargs)
         super().__init__(mapped_config)
         
+        default_model = os.getenv("DEFAULT_MODEL", "openai/gpt-4-turbo-preview")
+        
         self.expander = GPTExpander(
-            model=self.config.get("model", "openai/gpt-4"),
+            model=self.config.get("model", default_model),
             api_key=self.config.get("api_key"),
             base_url=self.config.get("base_url"),
             temperature=self.config.get("temperature", 0.7)
@@ -26,6 +29,7 @@ class GPTExpanderAppliance(BaseExpander):
     @classmethod
     def get_component_spec(cls) -> Dict[str, Any]:
         """获取组件规范"""
+        default_model = os.getenv("DEFAULT_MODEL", "openai/gpt-4-turbo-preview")
         return {
             "id": "gpt",
             "name": "GPT 展开器",
@@ -33,7 +37,7 @@ class GPTExpanderAppliance(BaseExpander):
             "params": {
                 "model": {
                     "type": "string",
-                    "default": "openai/gpt-4",
+                    "default": default_model,
                     "description": "GPT 模型名称"
                 },
                 "max_nodes": {

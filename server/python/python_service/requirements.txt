@@ -1,0 +1,11 @@
+# FastAPI 相关
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.0.0
+pyyaml>=6.0  # 用于加载 YAML 配置文件
+
+# 使用项目根目录的 dynhalting 模块
+# 其他依赖已在项目根目录的 requirements.txt 中定义
+#
+# 注：dynhalting 的 REBELExtractor 现在默认使用 spaCy 进行分句（可降级），
+# 如你只安装本 requirements.txt，也请确保同时安装根目录 requirements.txt。

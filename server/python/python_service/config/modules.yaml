@@ -1,0 +1,9 @@
+# KONG Module Configuration
+# -------------------------
+# 注意：该文件不再用于定义组件的可用性、默认值或预热设置。
+# 所有的组件发现与预热决策均已迁移至 SSOT (代码自省) 模式。
+# 保持该文件为空，或仅用于存放非组件相关的全局环境配置。
+
+global:
+  environment: "development"
+  log_level: "INFO"

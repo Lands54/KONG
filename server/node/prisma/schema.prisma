@@ -1,0 +1,73 @@
+// Prisma schema for SQLite (Upgraded for Pan-Graph Result Protocol)
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Experiment {
+  id              String    @id @default(uuid())
+  name            String
+  goal            String
+  initialEvidence String
+  haltingStrategy String
+  status          String    @default("running") // running, completed, failed
+  usedFrontendApiKey Boolean @default(false)
+  
+  datasetId       String?
+  datasetSplit    String?
+  datasetIndex    Int?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // 核心结果图
+  finalGraph      String?   // 最终产出的 Graph 对象 (JSON)
+  
+  // 关联数据
+  data            ExperimentData[]
+  nodes           Node[]
+
+  @@index([status])
+  @@index([createdAt])
+}
+
+model ExperimentData {
+  id            String   @id @default(uuid())
+  experimentId  String
+  category      String   // graph, trace, metric, config, metadata
+  key           String   // 例如 "G_B", "loop_1_inc", "total_steps"
+  value         String   // JSON 格式的内容
+  
+  experiment    Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+
+  @@index([experimentId])
+  @@index([category])
+  @@index([key])
+}
+
+model Node {
+  id            String   @id @default(uuid())
+  experimentId  String
+  nodeId        String   // 图节点ID
+  label         String   // 常用字段，保留索引供快速搜索
+  level         Int      @default(0)
+  
+  // Element-Slot Containers (JSON Strings)
+  attributes    String   @default("{}") // 描述性特征 (e.g. type, text, source)
+  metrics       String   @default("{}") // 量化指标 (e.g. weight, confidence, ablation)
+  state         String   @default("{}") // 流程状态 (e.g. visited, halted, status)
+  
+  // 结构化引用
+  parentNodeId  String?
+  
+  // 索引优化
+  experiment Experiment @relation(fields: [experimentId], references: [id], onDelete: Cascade)
+
+  @@index([experimentId])
+  @@index([parentNodeId])
+  @@index([label])
+}

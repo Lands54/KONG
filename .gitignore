@@ -1,0 +1,11 @@
+*.pyc
+__pycache__/
+.DS_Store
+.venv/
+venv/
+node_modules/
+dist/
+.env
+
+notebooks/
+*.ipynb

@@ -1,14 +1,14 @@
 # 🦍 KONG (Knowledge Oriented Neo-Graph)
 
-> **面向大语言模型 (LLM) 的科研级动态推理与知识图谱构建框架**
-> *A Research-Grade Framework for Dynamic LLM Reasoning & Knowledge Construction.*
+> **面向大语言模型 (LLM) 的多样化科研实验平台**
+> *A Diverse Research Platform for LLM Reasoning & Knowledge Engineering.*
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/status-Research%20Preview-orange)](https://github.com/your-repo)
 
-**KONG** 不仅仅是一个知识图谱构建工具，它是一个**动态推理引擎**。旨在填补非结构化文本、大语言模型 (LLM) 与结构化知识图谱之间的鸿沟。
+**KONG** 不仅仅是一个知识图谱构建工具，它是一个**开放的科研实验平台**。旨在填补非结构化文本、大语言模型 (LLM) 与结构化知识推理之间的鸿沟。
 
-与传统的流水线式（Pipeline）构建不同，KONG 将图构建视为一个**动态决策过程**，支持 **"Think-on-Graph"**、迭代式扩展 (Iterative Expansion) 和动态判停 (Dynamic Halting)，为研究人员提供了一个高度可观测、可插拔的实验平台。
+与传统的单一任务框架不同，KONG 提供了一个高度灵活的**动态决策环境**。它天然支持 **"Think-on-Graph"**、迭代式扩展 (Iterative Expansion) 和多模式编排。无论是动态判停 (Dynamic Halting)、多智能体辩论 (Multi-Agent Debate) 还是混合推理路径研究，KONG 都能为您提供一个开箱即用、高度可观测的实验底座。
 
 ---
 

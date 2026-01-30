@@ -29,13 +29,8 @@ export interface OrchestratorSpec extends ComponentSpec {
 }
 
 export interface ComponentCatalog {
-    [category: string]: any; // 支持动态类别如 calculators, testers 等
-    extractors: ComponentSpec[];
-    expanders: ComponentSpec[];
-    fusions: ComponentSpec[];
-    processors: ComponentSpec[];
-    haltings: ComponentSpec[];
     orchestrators: OrchestratorSpec[];
+    [category: string]: ComponentSpec[]; // 动态支持任意组件类型 (validators, extractors 等)
 }
 
 export interface ExperimentConfig {

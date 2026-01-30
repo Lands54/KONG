@@ -113,12 +113,12 @@ DEFAULT_MODEL=openai/gpt-4-turbo
 
 ## 🛠 扩展指南 (Contributing)
 
-想为 KONG 贡献代码？非常简单：
+KONG 提供了极致的扩展能力，**甚至支持自定义全新的组件类型**（如Validators, Summarizers），且**无需修改前端代码**。
 
-1.  在 `core/kgforge/components/` 下找到对应类别的 `modules` 目录。
-2.  创建一个新的 `.py` 文件。
-3.  继承基类（如 `BaseExpander`）并实现 `get_component_spec`。
-4.  重启服务，去 Web 控制台看看你的成果！
+1.  **添加组件 (Add Component)**: 在 `core/kgforge/components/<category>/modules/` 下新建 `.py` 文件，继承对应基类。
+2.  **添加类型 (Add Type)**: 在 `core/kgforge/protocols/interfaces.py` 中定义新的 Interface，系统会自动扫描并分类。
+
+重启服务后，**Web 控制台会自动渲染出新类型和新组件的配置界面**。
 
 详细教程请参阅 [Developer Guide](doc/architecture/DEVELOPER_GUIDE.md)。
 

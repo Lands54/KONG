@@ -354,21 +354,8 @@ class IValidator(IDescribable, ABC):
 
 *这就够了！* `engine.py` 会自动扫描 `interfaces.py` 中的所有子类，发现 `category="validators"` 后，下次扫描 `kgforge.components` 时就会自动寻找实现了 `IValidator` 的类。无需修改 `engine.py` 里的任何代码。
 
-### 7.4 步骤四：在前端类型中声明 (可选)
-如果该组件需要作为“独立插槽”出现在 Orchestrator 的配置中，后端 `get_component_spec` 的 `slots` 字段里写 `"validator": "IValidator"` 即可。
-
-但如果你希望它作为一个顶级分类显示在前端（如 Extractors/Expanders 那样），你需要更新前端的 `web/src/types/components.ts`：
-
-```typescript
-export interface ComponentCatalog {
-    // ... existing
-    orchestrators: OrchestratorSpec[];
-    validators: ComponentSpec[]; // <--- Add this
-}
-```
-
 ### 总结
 1.  **新增实现 (Impl)**：只需放文件，无需注册（已有类型）。
-2.  **新增类型 (Type)**：需创建目录 -> 定义基类 -> 注册目录映射。
+2.  **新增类型 (Type)**：需创建目录 -> 定义基类 -> 在 `interfaces.py` 注册协议。 KONG 会全自动处理剩下的事情（扫描、分类、前端渲染）。
 
 

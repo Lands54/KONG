@@ -29,12 +29,22 @@ export default function ExperimentPage() {
       .then((data: any) => {
         setExperiment((prev: any) => ({
           ...data,
-          // 保留当前已经收到的遥测数据，以防 API 返回的数据有滞后（虽然理应一致，但防御性编程）
+          // 保留当前已经收到的遥测数据
           intermediate_stats: {
             ...data.intermediate_stats,
             ...(prev?.intermediate_stats || {})
           }
         }));
+
+        // 恢复持久化的日志
+        if (data.logs && Array.isArray(data.logs)) {
+          setLogs(prev => {
+            // 简单的去重策略：如果现有长度为0，则直接使用持久化日志
+            if (prev.length === 0) return data.logs;
+            return prev;
+          });
+        }
+
         setLoading(false);
       })
       .catch(err => {
@@ -82,12 +92,13 @@ export default function ExperimentPage() {
       if (telemetryData.intermediate_stats) {
         setExperiment((prev: any) => {
           if (!prev) return prev;
+          const newStats = {
+            ...(prev.intermediate_stats || {}),
+            ...telemetryData.intermediate_stats
+          };
           return {
             ...prev,
-            intermediate_stats: {
-              ...(prev.intermediate_stats || {}),
-              ...telemetryData.intermediate_stats
-            }
+            intermediate_stats: newStats
           };
         });
       }

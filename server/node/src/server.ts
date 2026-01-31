@@ -12,7 +12,7 @@ import { experimentsRouter } from './routes/experiments';
 import { metricsRouter } from './routes/metrics';
 import { exportRouter } from './routes/export';
 import { analysisRouter } from './routes/analysis';
-import { setupWebSocket, broadcastLog } from './websocket/server';
+import { setupWebSocket, broadcastEvent } from './websocket/server';
 import { handleError } from './utils/errorHandler';
 import { logger } from './utils/logger';
 
@@ -29,12 +29,16 @@ app.use('/api/experiments', metricsRouter);
 app.use('/api/experiments', exportRouter);
 app.use('/api/analysis', analysisRouter);
 
-// 内部日志转发 (来自 Python)
-app.post('/api/internal/log', (req, res) => {
-  const { experimentId, message, level, timestamp } = req.body;
-  if (experimentId && message) {
-    broadcastLog(experimentId, { message, level, timestamp });
+// 内部遥测/日志转发 (来自 Python StreamingEventHandler)
+app.post('/api/internal/telemetry', (req, res) => {
+  const { experimentId, type, payload, timestamp } = req.body;
+
+  if (experimentId && type && payload) {
+    // 导入 broadcastEvent
+    const { broadcastEvent } = require('./websocket/server');
+    broadcastEvent(experimentId, { type, payload, timestamp });
   }
+
   res.status(200).send('OK');
 });
 

@@ -62,18 +62,24 @@ class DynamicHaltingCore:
             graph_b = self.extractor.extract(text)
             result.log_graph("G_B", graph_b)
             result.log_step("bottom_up_extraction", {"node_count": len(graph_b.nodes)})
+            # Telemetry Broadcast
+            logger.telemetry({"intermediate_stats": {"G_B": {"node_count": len(graph_b.nodes), "edge_count": len(graph_b.edges), "depth": 0, "source": "extractor"}}})
             
             # 3. Top-Down 展开 (G_T)
             if verbose: logger.info("步骤 2: 执行 Top-Down 展开 (G_T)...")
             graph_t = self.expander.expand_goal(goal)
             result.log_graph("G_T", graph_t)
             result.log_step("top_down_expansion", {"node_count": len(graph_t.nodes)})
+            # Telemetry Broadcast
+            logger.telemetry({"intermediate_stats": {"G_T": {"node_count": len(graph_t.nodes), "edge_count": len(graph_t.edges), "depth": 0, "source": "expander"}}})
             
             # 4. 融合 (G_F)
             if verbose: logger.info("步骤 3: 语义图融合 (G_F)...")
             current_graph = self.fusion.fuse(graph_b, graph_t)
             result.log_graph("G_F", current_graph)
             result.log_step("initial_fusion", {"node_count": len(current_graph.nodes)})
+            # Telemetry Broadcast
+            logger.telemetry({"intermediate_stats": {"G_F": {"node_count": len(current_graph.nodes), "edge_count": len(current_graph.edges), "depth": 0, "source": "fusion"}}})
             
             # 5. 迭代闭环自适应展开
             iterations = 0
@@ -174,6 +180,8 @@ class DynamicHaltingCore:
                     "new_nodes": len(increment_graph.nodes),
                     "parent_node": parent_id
                 })
+                # Telemetry Broadcast (Loop Update)
+                logger.telemetry({"intermediate_stats": {f"LOOP_{iterations}": {"node_count": len(current_graph.nodes), "edge_count": len(current_graph.edges), "depth": depth, "source": "loop_merge"}}})
                 
                 depth += 1
             

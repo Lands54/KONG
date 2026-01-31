@@ -8,8 +8,17 @@ import { useEffect, useRef, useState } from 'react';
 // WebSocket 使用与 HTTP 相同的端口
 const WS_URL = `ws://${window.location.hostname}:3000`;
 
+// 添加类型定义
+export interface StandardEvent {
+  type: 'log' | 'telemetry' | 'graph_update' | 'status_update';
+  experimentId: string;
+  data: any;
+  timestamp?: number;
+}
+
 export function useWebSocket(experimentId: string | undefined) {
   const [lastMessage, setLastMessage] = useState<MessageEvent | null>(null);
+  const [lastEvent, setLastEvent] = useState<StandardEvent | null>(null);
   const [connected, setConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -23,7 +32,7 @@ export function useWebSocket(experimentId: string | undefined) {
     ws.onopen = () => {
       console.log('WebSocket connected');
       setConnected(true);
-      
+
       // 订阅实验
       ws.send(JSON.stringify({
         type: 'subscribe',
@@ -33,6 +42,13 @@ export function useWebSocket(experimentId: string | undefined) {
 
     ws.onmessage = (event) => {
       setLastMessage(event);
+      try {
+        const parsed = JSON.parse(event.data);
+        // 标准化事件结构
+        setLastEvent(parsed);
+      } catch (e) {
+        // ignore non-json messages
+      }
     };
 
     ws.onerror = (error) => {
@@ -51,5 +67,5 @@ export function useWebSocket(experimentId: string | undefined) {
     };
   }, [experimentId]);
 
-  return { lastMessage, connected };
+  return { lastMessage, lastEvent, connected };
 }

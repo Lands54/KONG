@@ -147,6 +147,16 @@ export class ExperimentService {
         });
       }
 
+      // F. Logs 桶 (New: Log Persistence)
+      if (result.logs) {
+        dataToCreate.push({
+          experimentId,
+          category: 'logs',
+          key: 'execution_logs',
+          value: safeStringify(result.logs)
+        });
+      }
+
       // 执行批量创建
       if (dataToCreate.length > 0) {
         await prisma.experimentData.createMany({ data: dataToCreate });
@@ -247,6 +257,7 @@ export class ExperimentService {
     const intermediate_stats: Record<string, any> = {};
     const metrics: Record<string, any> = {};
     const trace: any[] = [];
+    const logs: any[] = [];
 
     // 从 ExperimentData 中提取数据
     experiment.data.forEach(item => {
@@ -260,6 +271,8 @@ export class ExperimentService {
           metrics[item.key] = parsed;
         } else if (item.category === 'trace') {
           trace.push(...(Array.isArray(parsed) ? parsed : [parsed]));
+        } else if (item.category === 'logs') {
+          logs.push(...(Array.isArray(parsed) ? parsed : [parsed]));
         }
       } catch {
         // 容错处理字符串
@@ -273,7 +286,8 @@ export class ExperimentService {
       intermediate_graphs,
       intermediate_stats,
       metrics,
-      trace
+      trace,
+      logs
     };
   }
 

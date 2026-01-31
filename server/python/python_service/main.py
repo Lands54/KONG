@@ -52,9 +52,11 @@ logger = get_logger(__name__)
 async def lifespan(app: FastAPI):
     """服务寿命周期管理：处理启动与关闭逻辑"""
     try:
-        from python_service.core.logging import WebSocketLogHandler
-        # 注册实时日志处理器
-        logging.getLogger("kgforge").addHandler(WebSocketLogHandler())
+        from python_service.core.logging import StreamingEventHandler
+        from kgforge.utils.logger import register_global_handler
+        
+        # 注册实时日志处理器 (全局)
+        register_global_handler(StreamingEventHandler())
 
         # 懒加载服务
         from services.lifecycle import preload_all

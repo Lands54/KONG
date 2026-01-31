@@ -9,7 +9,7 @@ import os
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Any
+from typing import Optional, Any, Dict
 from .constants import DEFAULT_LOG_LEVEL, DEFAULT_LOG_FORMAT
 
 # 确保默认日志目录存在
@@ -86,6 +86,25 @@ class DataProfiler:
 # 单例实例
 profiler = DataProfiler()
 
+# 全局 Handlers (如 Telemetry)，会自动附加到所有通过 setup_logger 创建的 logger
+_GLOBAL_HANDLERS = []
+
+def register_global_handler(handler: logging.Handler):
+    """
+    注册一个全局 Handler，它会被添加到：
+    1. 所有未来通过 setup_logger 创建的 logger
+    2. 所有已经存在的、且名字以 'kgforge' 开头的 logger
+    """
+    if handler not in _GLOBAL_HANDLERS:
+        _GLOBAL_HANDLERS.append(handler)
+        
+        # 追溯既往：给所有已存在的 logger 补票
+        for name, logger in logging.Logger.manager.loggerDict.items():
+            if isinstance(logger, logging.Logger) and name.startswith("kgforge"):
+                # 避免重复添加
+                if handler not in logger.handlers:
+                    logger.addHandler(handler)
+
 def setup_logger(
     name: str,
     level: Optional[str] = None,
@@ -139,19 +158,58 @@ def setup_logger(
         except Exception as e:
             sys.stderr.write(f"Failed to setup file logging for {name}: {e}\n")
 
+    # 3. 添加全局 Handlers (如 Telemetry)
+    for h in _GLOBAL_HANDLERS:
+        if h not in logger.handlers:
+            logger.addHandler(h)
+
     # 防止日志传播到根 logger
     logger.propagate = False
     
     return logger
 
-def get_logger(name: str) -> logging.Logger:
+class TelemetryAdapter(logging.LoggerAdapter):
+    """
+    支持遥测数据的 Logger Adapter
+    增加 telemetry() 方法，将结构化数据通过 extra 字段传递给 Handler
+    """
+    def process(self, msg, kwargs):
+        # 修复: 默认的 process 会简单覆盖 extra，导致 telemetry 参数丢失
+        # 我们必须手动合并 self.extra 和 kwargs['extra']
+        extra = self.extra.copy()
+        if 'extra' in kwargs:
+            extra.update(kwargs['extra'])
+        kwargs['extra'] = extra
+        return msg, kwargs
+
+    def telemetry(self, data: Dict[str, Any], level: int = logging.INFO):
+        """
+        发送遥测事件
+        Args:
+           data: 结构化数据 (如 {"node_count": 100, "stage": "G_B"})
+           level: 日志级别 (默认 INFO)
+        """
+        # 1. 发送日志事件 (用于 WebSocket 广播)
+        self.log(level, "TELEMETRY_EVENT", extra={"telemetry": data})
+        
+        # 2. 尝试更新上下文中的持久化 Stats (用于保存到 DB)
+        try:
+            from python_service.core.context import update_current_stats
+            if "intermediate_stats" in data:
+                update_current_stats(data["intermediate_stats"])
+        except ImportError:
+            pass # 如果不在 server 坏境运行 (例如本地脚本)，忽略 context 更新
+
+def get_logger(name: str) -> TelemetryAdapter:
     """
     获取 logger（如果已存在则返回，否则创建默认）
+    返回 TelemetryAdapter 增强版实例
     
     Args:
         name: logger 名称
         
     Returns:
-        Logger 实例
+        TelemetryAdapter 实例
     """
-    return setup_logger(name, log_to_file=True) # 默认开启文件日志以便调试
+    logger = setup_logger(name, log_to_file=True) # 默认开启文件日志以便调试
+    return TelemetryAdapter(logger, {})

@@ -13,7 +13,7 @@ from schemas.graph_schema import graph_to_dict
 from python_service.core.factory import UnifiedFactory
 from kgforge.components.base import TaskCancelledError
 from python_service.core.errors import KongAuthError, KongRateLimitError
-from python_service.core.context import set_experiment_id, clear_experiment_id
+from python_service.core.context import set_experiment_id, clear_experiment_id, get_current_stats, get_current_logs
 import openai
 import sys
 import platform
@@ -88,7 +88,11 @@ class InferenceEngine:
                     k: graph_to_dict(g) for k, g in getattr(result, "intermediate_graphs", {}).items()
                 },
                 "trace": getattr(result, "trace", []),
-                "intermediate_stats": getattr(result, "intermediate_stats", {}),
+                "logs": get_current_logs(), # Persist full logs
+                "intermediate_stats": {
+                    **getattr(result, "intermediate_stats", {}),
+                    **get_current_stats() 
+                },
                 "metadata": {
                     "orchestrator_id": orchestrator,
                     "execution_time_ms": int((time.time() - start_time) * 1000),

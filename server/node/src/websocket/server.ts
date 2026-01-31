@@ -100,15 +100,16 @@ export function broadcastStatusUpdate(experimentId: string, status: string) {
   });
 }
 /**
- * 广播日志消息
+ * 广播通用遥测事件 (LOG 或 TELEMETRY)
  */
-export function broadcastLog(experimentId: string, logEntry: any) {
+export function broadcastEvent(experimentId: string, event: { type: string, payload: any, timestamp?: number }) {
   if (!wss) return;
 
   const message = JSON.stringify({
-    type: 'log',
+    type: event.type === 'TELEMETRY' ? 'telemetry' : 'log', // 统一前端 type
     experimentId,
-    log: logEntry
+    data: event.payload,
+    timestamp: event.timestamp || Date.now()
   });
 
   wss.clients.forEach((client: ExtWebSocket) => {

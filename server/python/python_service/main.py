@@ -3,10 +3,14 @@ Python FastAPI 服务
 封装现有 dynhalting 模块，提供推理 API
 """
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from python_service.core.errors import KongError
+from contextlib import asynccontextmanager
 import sys
 import os
+import logging
 from pathlib import Path
 
 # 不再在这里手动修改 sys.path，建议在运行环境或通过 PYTHONPATH 设置
@@ -44,17 +48,14 @@ from kgforge import get_logger
 
 logger = get_logger(__name__)
 
-app = FastAPI(
-    title="Dynamic Halting Research Framework API",
-    description="面向大语言模型的本体语义抽取与动态判停研究框架",
-    version="0.1.0"
-)
-
-# 在应用启动时预加载模型
-@app.on_event("startup")
-async def startup_event():
-    """服务启动时预加载所有模型"""
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """服务寿命周期管理：处理启动与关闭逻辑"""
     try:
+        from python_service.core.logging import WebSocketLogHandler
+        # 注册实时日志处理器
+        logging.getLogger("kgforge").addHandler(WebSocketLogHandler())
+
         # 懒加载服务
         from services.lifecycle import preload_all
         
@@ -65,6 +66,22 @@ async def startup_event():
     except Exception as e:
         logger.error(f"组件预热失败: {e}")
         logger.warning("服务将继续运行，但组件将在首次使用时加载（可能较慢）")
+    
+    yield  # 服务运行中
+
+app = FastAPI(
+    title="Dynamic Halting Research Framework API",
+    description="面向大语言模型的本体语义抽取与动态判停研究框架",
+    version="0.1.0",
+    lifespan=lifespan
+)
+
+@app.exception_handler(KongError)
+async def kong_exception_handler(request: Request, exc: KongError):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=exc.to_dict()
+    )
 
 # 配置 CORS
 app.add_middleware(

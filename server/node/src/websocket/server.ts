@@ -21,7 +21,7 @@ export function setupWebSocket(server: HTTPServer) {
     ws.on('message', (message: string) => {
       try {
         const data = JSON.parse(message.toString());
-        
+
         // 处理客户端消息（如订阅实验）
         if (data.type === 'subscribe' && data.experimentId) {
           ws.experimentId = data.experimentId;
@@ -91,6 +91,24 @@ export function broadcastStatusUpdate(experimentId: string, status: string) {
     type: 'status_update',
     experimentId,
     status
+  });
+
+  wss.clients.forEach((client: ExtWebSocket) => {
+    if (client.readyState === WebSocket.OPEN && client.experimentId === experimentId) {
+      client.send(message);
+    }
+  });
+}
+/**
+ * 广播日志消息
+ */
+export function broadcastLog(experimentId: string, logEntry: any) {
+  if (!wss) return;
+
+  const message = JSON.stringify({
+    type: 'log',
+    experimentId,
+    log: logEntry
   });
 
   wss.clients.forEach((client: ExtWebSocket) => {

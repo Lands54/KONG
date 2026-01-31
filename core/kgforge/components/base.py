@@ -51,6 +51,24 @@ class BaseProcessor(BaseAppliance, IProcessor):
     pass
 
 
+import threading
+
 class BaseOrchestrator(BaseAppliance, IOrchestrator):
     """编排器辅助基类 (Motherboard)"""
+    
+    def __init__(self, config: Optional[Dict[str, Any]] = None):
+        super().__init__(config)
+        self._cancel_event: Optional[threading.Event] = None
+
+    def set_cancellation_event(self, event: threading.Event):
+        """注入取消信号"""
+        self._cancel_event = event
+
+    def check_cancellation(self):
+        """检查任务是否被取消，如是则抛出异常"""
+        if self._cancel_event and self._cancel_event.is_set():
+            raise TaskCancelledError("Task was cancelled by user.")
+
+class TaskCancelledError(Exception):
+    """任务被取消异常"""
     pass

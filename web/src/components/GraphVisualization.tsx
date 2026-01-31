@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import cytoscape from 'cytoscape';
 import dagre from 'cytoscape-dagre';
 import { graphToCytoscape } from '../services/graphTransformer';
-import { useWebSocket } from '../hooks/useWebSocket';
 
 // 注册 dagre 扩展
 cytoscape.use(dagre);
@@ -18,7 +17,6 @@ type LayoutType = 'dagre' | 'breadthfirst' | 'grid' | 'circle' | 'concentric' | 
 export default function GraphVisualization({ graph, experimentId, onNodeClick }: GraphVisualizationProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
-  const { lastMessage } = useWebSocket(experimentId);
   const [layoutType, setLayoutType] = useState<LayoutType>('dagre');
 
   useEffect(() => {
@@ -394,17 +392,6 @@ export default function GraphVisualization({ graph, experimentId, onNodeClick }:
       console.error('Error applying layout:', error);
     }
   }, [layoutType, graph]);
-
-  // 处理 WebSocket 更新
-  useEffect(() => {
-    if (!lastMessage || !cyRef.current) return;
-
-    const data = JSON.parse(lastMessage.data);
-    if (data.type === 'graph_update' && data.data) {
-      const elements = graphToCytoscape(data.data);
-      cyRef.current.json({ elements });
-    }
-  }, [lastMessage]);
 
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', backgroundColor: '#f8fafc' }}>

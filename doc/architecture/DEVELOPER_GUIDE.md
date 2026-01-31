@@ -358,4 +358,45 @@ class IValidator(IDescribable, ABC):
 1.  **新增实现 (Impl)**：只需放文件，无需注册（已有类型）。
 2.  **新增类型 (Type)**：需创建目录 -> 定义基类 -> 在 `interfaces.py` 注册协议。 KONG 会全自动处理剩下的事情（扫描、分类、前端渲染）。
 
+---
+
+## 8. 错误处理协议 (Structured Error Protocol)
+
+KONG v1.1 引入了结构化错误处理机制，所有后端 API (Python Service) 在发生预期内错误时，将返回统一的 JSON 格式，而非 500 Internal Server Error。
+
+### 8.1 错误响应格式
+HTTP Status Code 将根据错误类型变化 (4xx/5xx)，但 Body 始终遵循以下结构：
+
+```json
+{
+  "error": {
+    "code": "ERROR_CODE_STRING",
+    "message": "User friendly error message",
+    "details": { ... } // Optional debugging info
+  }
+}
+```
+
+### 8.2 标准错误码 (Error Codes)
+
+| Error Code | HTTP Status | Description |
+| :--- | :--- | :--- |
+| `AUTH_FAILED` | 401 | API Key 无效或缺失 (如 OpenAI Key) |
+| `RATE_LIMIT` | 429 | 调用频率超限 (Rate Limit Exceeded) |
+| `VALIDATION_ERROR` | 422 | 输入参数校验失败 |
+| `NETWORK_ERROR` | 503 | 外部服务 (LLM API) 连接失败 |
+| `INTERNAL_ERROR` | 500 | 未知系统错误 |
+| `CANCELLED` | 499 | 任务被用户取消 |
+
+### 8.3 异常抛出示例
+在组件开发中，请优先抛出 `python_service.core.errors` 中定义的异常，而不是通用的 `Exception`。
+
+```python
+from python_service.core.errors import KongAuthError
+
+def my_function():
+    if not is_valid_key(api_key):
+        raise KongAuthError("API Key invalid", details={"key_hint": "sk-..."})
+```
+
 

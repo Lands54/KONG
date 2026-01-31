@@ -4,6 +4,7 @@ import ExperimentPage from './pages/ExperimentPage';
 import CreateExperimentForm from './components/CreateExperimentForm';
 import ExperimentListItem from './components/ExperimentListItem';
 import ApiKeyDialog from './components/ApiKeyDialog';
+import { ErrorToast } from './components/ErrorToast';
 import { api } from './services/apiClient';
 
 function ExperimentList() {
@@ -208,6 +209,7 @@ function ExperimentList() {
 function App() {
   return (
     <BrowserRouter>
+      <ErrorToast />
       <Routes>
         <Route path="/" element={<ExperimentList />} />
         <Route path="/experiments/:id" element={<ExperimentPage />} />

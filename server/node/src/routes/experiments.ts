@@ -63,6 +63,16 @@ router.get('/', asyncHandler(async (req: Request, res: Response) => {
 }));
 
 /**
+ * POST /api/experiments/:id/cancel
+ * 取消实验
+ */
+router.post('/:id/cancel', asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const result = await experimentService.cancelExperiment(id);
+  res.json(result);
+}));
+
+/**
  * POST /api/experiments/:id/rerun
  * 重新运行实验
  */

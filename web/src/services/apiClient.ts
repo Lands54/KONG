@@ -4,6 +4,7 @@
  */
 
 import API_CONFIG, { getNodeApiUrl, getPythonApiUrl } from '../config/api';
+import { errorBus } from '../utils/errorBus';
 
 export interface ApiResponse<T = any> {
   data?: T;
@@ -52,12 +53,38 @@ class ApiClient {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({
-          error: 'Unknown error',
-          message: response.statusText
-        }));
+        const data = await response.json().catch(() => ({}));
 
-        throw new Error(errorData.message || errorData.error || `HTTP ${response.status}`);
+        // 尝试解析结构化错误
+        let code = 'UNKNOWN_ERROR';
+        let message = response.statusText || `HTTP ${response.status}`;
+        let details = null;
+
+        if (data.error && typeof data.error === 'object') {
+          // v1.1 结构化
+          code = data.error.code || code;
+          message = data.error.message || message;
+          details = data.error.details;
+        } else if (data.error && typeof data.error === 'string') {
+          // 旧格式
+          message = data.error;
+        } else if (data.message) {
+          message = data.message;
+        }
+
+        // 触发全局提示 (过滤 404 防止干扰)
+        if (response.status !== 404) {
+          errorBus.emit({
+            code,
+            message,
+            details
+          });
+        }
+
+        const err = new Error(message);
+        (err as any).code = code;
+        (err as any).details = details;
+        throw err;
       }
 
       return await response.json();
@@ -171,6 +198,7 @@ export const api = {
     rerun: (id: string, apiKey?: string) =>
       nodeApiClient.post(API_CONFIG.ENDPOINTS.EXPERIMENT_RERUN(id), { apiKey }),
     delete: (id: string) => nodeApiClient.delete(API_CONFIG.ENDPOINTS.EXPERIMENT_DELETE(id)),
+    cancel: (id: string) => nodeApiClient.post(API_CONFIG.ENDPOINTS.EXPERIMENT_CANCEL(id)),
     metrics: (id: string) => nodeApiClient.get(API_CONFIG.ENDPOINTS.EXPERIMENT_METRICS(id)),
     export: (id: string) => nodeApiClient.get(API_CONFIG.ENDPOINTS.EXPERIMENT_EXPORT(id)),
   },

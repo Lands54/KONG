@@ -16,6 +16,7 @@ const API_CONFIG = {
     EXPERIMENT_RERUN: (id: string) => `/api/experiments/${id}/rerun`,
     EXPERIMENT_DELETE: (id: string) => `/api/experiments/${id}`,
     EXPERIMENT_METRICS: (id: string) => `/api/experiments/${id}/metrics`,
+    EXPERIMENT_CANCEL: (id: string) => `/api/experiments/${id}/cancel`,
     EXPERIMENT_EXPORT: (id: string) => `/api/experiments/${id}/export`,
 
     // Python 服务端点

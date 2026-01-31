@@ -8,6 +8,7 @@ import NodeMetadataPanel from '../components/NodeMetadataPanel';
 import ApiKeyDialog from '../components/ApiKeyDialog';
 import { api } from '../services/apiClient';
 import { useWebSocket } from '../hooks/useWebSocket';
+import { LiveLogPanel, LogEntry } from '../components/LiveLogPanel';
 
 export default function ExperimentPage() {
   const { id } = useParams<{ id: string }>();
@@ -16,6 +17,7 @@ export default function ExperimentPage() {
   const [selectedGraph, setSelectedGraph] = React.useState<string>('Final');
   const [selectedNode, setSelectedNode] = React.useState<any>(null);
   const [showApiKeyDialog, setShowApiKeyDialog] = React.useState(false);
+  const [logs, setLogs] = React.useState<LogEntry[]>([]);
 
   // WebSocket 连接
   const { lastMessage } = useWebSocket(id);
@@ -57,6 +59,11 @@ export default function ExperimentPage() {
       // 处理图更新
       if (data.type === 'graph_update' && data.experimentId === id) {
         fetchExperiment();
+      }
+
+      // 处理日志
+      if (data.type === 'log' && data.experimentId === id) {
+        setLogs(prev => [...prev, data.log]);
       }
     } catch (error) {
       console.error('Error parsing WebSocket message:', error);
@@ -154,6 +161,17 @@ export default function ExperimentPage() {
     }
   };
 
+  const handleStop = async () => {
+    if (!window.confirm('确定要停止当前任务吗？')) return;
+    try {
+      await api.experiments.cancel(id!);
+      // 给一点时间让后端处理
+      setTimeout(() => fetchExperiment(), 500);
+    } catch (error) {
+      alert('停止失败');
+    }
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#f8fafc' }}>
       {/* Precision Navigation Bar */}
@@ -200,7 +218,25 @@ export default function ExperimentPage() {
             </div>
 
             <div style={{ display: 'flex', gap: '8px' }}>
-              {(experiment.status === 'completed' || experiment.status === 'failed') && (
+              {experiment.status === 'running' && (
+                <button
+                  onClick={handleStop}
+                  style={{
+                    padding: '6px 14px',
+                    backgroundColor: '#fffbeb',
+                    color: '#b45309',
+                    border: '1px solid #fcd34d',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    textTransform: 'uppercase'
+                  }}
+                >
+                  STOP
+                </button>
+              )}
+              {(experiment.status === 'completed' || experiment.status === 'failed' || experiment.status === 'cancelled') && (
                 <button
                   onClick={() => handleRerun()}
                   style={{
@@ -289,6 +325,10 @@ export default function ExperimentPage() {
               experimentId={id!}
               onNodeClick={(node) => setSelectedNode(node)}
             />
+          </div>
+          <div style={{ padding: '0 12px 12px 12px' }}>
+            {/* Live Debug Terminal */}
+            <LiveLogPanel logs={logs} height="200px" />
           </div>
         </div>
 

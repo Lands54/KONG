@@ -18,6 +18,7 @@ class InferenceRequest(BaseModel):
     component_params: Dict[str, Any] = {}
     params: Dict[str, Any] = {}
     api_key: Optional[str] = None
+    experiment_id: Optional[str] = None
 
 @router.post("/infer")
 async def infer(request: InferenceRequest):
@@ -39,12 +40,29 @@ async def infer(request: InferenceRequest):
             components=request.components,
             component_params=request.component_params,
             params=request.params,
-            api_key=request.api_key
+            api_key=request.api_key,
+            experiment_id=request.experiment_id
         )
         return result
     except Exception as e:
         import traceback
         print(f"Error in inference API: {traceback.format_exc()}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/cancel/{experiment_id}")
+async def cancel_task(experiment_id: str):
+    """
+    取消正在运行的任务
+    """
+    try:
+        from services.inference import InferenceEngine
+        engine = InferenceEngine()
+        success = engine.cancel_task(experiment_id)
+        if success:
+            return {"status": "cancelled", "experiment_id": experiment_id}
+        else:
+            return {"status": "not_found", "message": "Task not running or ID not found"}
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/health")

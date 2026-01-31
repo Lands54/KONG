@@ -83,7 +83,8 @@ export class ExperimentService {
         max_depth: DEFAULT_MAX_DEPTH,
         max_nodes: DEFAULT_MAX_NODES,
         max_iterations: DEFAULT_MAX_ITERATIONS,
-        api_key: data.apiKey
+        api_key: data.apiKey,
+        experiment_id: experimentId
       };
 
       const response = await axios.post(`${PYTHON_API_URL}/api/v1/infer`, payload, { timeout: 300000 });
@@ -187,7 +188,7 @@ export class ExperimentService {
       }
 
       // 3. 更新主表状态
-      const finalStatus = result.status === 'failed' ? 'failed' : 'completed';
+      const finalStatus = result.status; // 直接使用 Python 结果，支持 'cancelled'
       await prisma.experiment.update({
         where: { id: experimentId },
         data: {
@@ -209,6 +210,21 @@ export class ExperimentService {
       });
       const { broadcastStatusUpdate } = await import('../websocket/server');
       broadcastStatusUpdate(experimentId, 'failed');
+    }
+  }
+
+  /**
+   * 取消实验
+   */
+  async cancelExperiment(id: string) {
+    try {
+      const response = await axios.post(`${PYTHON_API_URL}/api/v1/cancel/${id}`);
+      // 本地状态更新交由 runInferenceAsync 的回调处理，或者在这里预先设为 stopping?
+      // 鉴于 Python 端响应很快，这里主要负责触发。
+      return response.data;
+    } catch (error: any) {
+      logger.error(`Failed to cancel experiment ${id}:`, error.message);
+      throw error;
     }
   }
 

@@ -3,7 +3,7 @@
 纯粹的算法流程实现，不依赖系统协议
 """
 
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any, List, Callable
 from kgforge.protocols import IExtractor, IExpander, IFusion, IHalting
 from kgforge.models.graph import Graph
 from kgforge.models.experiment_result import ExperimentResult
@@ -35,11 +35,14 @@ class DynamicHaltingCore:
         self.max_depth = max_depth
         self.kwargs = kwargs
 
-    def run(self, goal: str, text: str, verbose: bool = True, **kwargs) -> ExperimentResult:
+    def run(self, goal: str, text: str, verbose: bool = True, check_cancellation: Optional[Callable[[], None]] = None, **kwargs) -> ExperimentResult:
         """运行动态判停算法全链路"""
         if verbose:
             logger.info(f"--- [Orchestrator: DynamicHalting] 开始任务 ---")
             logger.info(f"目标: {goal}")
+        
+        if check_cancellation:
+            check_cancellation()
 
         # 1. 初始化结果容器
         result = ExperimentResult(graph=Graph(graph_id="dynamic_result"))
@@ -77,6 +80,9 @@ class DynamicHaltingCore:
             depth = 0
             
             while iterations < self.max_iterations and depth < self.max_depth:
+                if check_cancellation:
+                    check_cancellation()
+
                 iterations += 1
                 if verbose: logger.info(f"迭代 {iterations}: 评估图状态及判停准则...")
                 

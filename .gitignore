@@ -9,3 +9,10 @@ dist/
 
 notebooks/
 *.ipynb
+
+# Logs and DBs
+logs/
+server/python/python_service/logs/
+*.log
+*.db
+*.sqlite

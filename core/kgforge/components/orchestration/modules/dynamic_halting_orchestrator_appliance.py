@@ -97,4 +97,4 @@ class DynamicHaltingOrchestratorAppliance(BaseOrchestrator):
                 **core_config
             )
 
-        return self.core.run(goal=goal, text=text, verbose=verbose, **kwargs)
+        return self.core.run(goal=goal, text=text, verbose=verbose, check_cancellation=self.check_cancellation, **kwargs)

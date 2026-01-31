@@ -39,7 +39,8 @@ echo -e "${GREEN}[1/3] 正在启动 Python 推理服务 (Port 8000)...${NC}"
 (
     cd "$ROOT_DIR/server/python/python_service"
     export PYTHONPATH="$ROOT_DIR/server/python:$ROOT_DIR/core:$PYTHONPATH"
-    python main.py
+    # Redirect output to log file, unbuffered
+    python -u main.py > "$ROOT_DIR/.logs/python_service.log" 2>&1
 ) &
 
 # 2. 启动 Node.js 适配层
@@ -48,7 +49,7 @@ echo -e "${GREEN}[2/3] 正在启动 Node.js 中继服务 (Port 3001)...${NC}"
 (
     cd "$ROOT_DIR/server/node"
     # 这里环境变量已经在上方 export，Node 进程会继承它
-    npm run dev
+    npm run dev > "$ROOT_DIR/.logs/node_relay.log" 2>&1
 ) &
 
 # 3. 启动前端 UI

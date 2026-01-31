@@ -33,6 +33,36 @@ PRISM 采用先进的协议自省机制。Python 后端定义的组件参数 (Sc
 想要测试一个新的 Prompt 策略？或者接入一个新的 LLM？
 只需继承 `BaseExpander` 并实现两个方法，文件保存即生效。系统会自动发现并注册你的新组件。
 
+### 5. ⚡️ v3.0 高能特性 (New in v3.0)
+*   **PRISM CLI (运维利器)**: 提供类似手术刀般的终端控制能力。支持原子化测试 (`test`)、无头实验执行 (`run`) 和实时日志追踪 (`logs`)。
+*   **热重载引擎 (Hot-Reloading)**: 实现了 Python 核心组件的“保存即生效”。修改抽取/编排算法时，无需重启后端服务。
+*   **健壮性架构 (Robustness)**: 具备全局错误传播机制（401/429错误穿透）、Prisma 数据库事务支持，以及 WebSocket 连接的自动断线重连（指数退避策略）。
+
+---
+
+## 🛠 开发工具: PRISM CLI
+
+为了提升研发效率，我们提供了强大的终端工具集。您可以在不启动前端的情况下进行算法验证。
+
+```bash
+# 1. 诊断环境
+./scripts/prism doctor
+
+# 2. 列出所有注册组件
+./scripts/prism ls
+
+# 3. 原子测试单个组件 (智能自动转换 JSON/Graph 类型)
+echo "文本输入" | ./scripts/prism test <component_id> --method extract
+
+# 4. 无头运行完整实验管线
+./scripts/prism run pipeline_config.json --dev
+
+# 5. 实时追踪服务端日志
+./scripts/prism logs -f
+```
+
+👉 **[查看完整 CLI 使用指南](docs/CLI_GUIDE.md)**
+
 ---
 
 ## 🏗 系统架构 (Architecture)
@@ -57,7 +87,9 @@ PRISM 采用现代化的分层架构，确保灵活性与性能的平衡。
 | 文档 | 描述 | 受众 |
 | :--- | :--- | :--- |
 | **[架构全景图 (Global)](doc/architecture/GLOBAL.md)** | C4 模型视角下的系统全貌与核心决策 | **必读** |
+| **[CLI 使用指南 (CLI)](docs/CLI_GUIDE.md)** | 如何使用 PRISM CLI 进行高效运维与测试 | **推荐** |
 | **[开发者指南 (Guide)](doc/architecture/DEVELOPER_GUIDE.md)** | 手把手教你编写 Expander/Orchestrator | **开发者** |
+| **[v3.0 路线图 (Roadmap)](docs/ver3.md)** | 系统的演进方向、热重载与健壮性设计 | 架构师 |
 | **[核心库设计 (Core)](doc/architecture/CORE.md)** | Python Engine 的内部实现机制 | 架构师 |
 | **[接口协议文档 (Protocol)](doc/architecture/NODE.md)** | 前后端交互的 Pan-Graph Result 协议 | 前后端 |
 

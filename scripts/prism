@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# 获取脚本所在目录的上一级目录（即项目根目录）
+# 假设脚本位于 PROJECT_ROOT/scripts/prism
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# 设置 PYTHONPATH 包含项目根目录
+export PYTHONPATH="$PROJECT_ROOT:$PYTHONPATH"
+
+# 运行 Python CLI
+# 假设 CLI 脚本位于 PROJECT_ROOT/server/python/prism_cli.py
+CLI_SCRIPT="$PROJECT_ROOT/server/python/prism_cli.py"
+
+if [ ! -f "$CLI_SCRIPT" ]; then
+    echo "Error: CLI script not found at $CLI_SCRIPT"
+    exit 1
+fi
+
+python3 "$CLI_SCRIPT" "$@"

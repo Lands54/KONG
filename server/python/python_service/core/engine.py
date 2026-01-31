@@ -1,6 +1,7 @@
 import importlib
 import inspect
 import pkgutil
+import sys
 from typing import Dict, List, Any, Type, Optional
 from kgforge.protocols import IDescribable
 from kgforge.protocols.interfaces import META_REGISTRY, IPreloadable
@@ -94,6 +95,33 @@ class ComponentEngine:
             self.scan_all()
         return [spec["id"] for spec in self._spec_cache.get(category, [])]
 
+    def reload_module(self, module_name: str):
+        """
+        动态重载模块 (Hot-Reload)
+        
+        策略：
+        1. 从 sys.modules 移除目标模块
+        2. 清除相关类的缓存 (_class_cache)
+        3. 重新扫描注册表 (触发重新 import 和自省)
+        """
+        # 1. Evict from sys.modules
+        if module_name in sys.modules:
+            del sys.modules[module_name]
+        
+        # 2. Clear internal caches
+        # 我们需要清除使用了该 module 的所有缓存条目
+        keys_to_remove = []
+        for key, cls in self._class_cache.items():
+            if cls.__module__ == module_name:
+                keys_to_remove.append(key)
+        
+        for k in keys_to_remove:
+            del self._class_cache[k]
+            
+        # 3. Force Re-scan to update Specs
+        # TODO: 优化为增量扫描？目前为了安全起见全量扫描
+        self.scan_all()
+        return True
 
 # 单例入口
 engine = ComponentEngine()

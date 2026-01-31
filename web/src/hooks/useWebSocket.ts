@@ -21,9 +21,16 @@ export function useWebSocket(experimentId: string | undefined) {
   const [lastEvent, setLastEvent] = useState<StandardEvent | null>(null);
   const [connected, setConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
+  const reconnectAttemptsRef = useRef(0);
+  const reconnectTimeoutRef = useRef<number | null>(null);
 
-  useEffect(() => {
+  const connect = () => {
     if (!experimentId) return;
+
+    // 清理旧连接
+    if (wsRef.current) {
+      wsRef.current.close();
+    }
 
     // 连接到 WebSocket 服务器
     const ws = new WebSocket(WS_URL);
@@ -32,6 +39,7 @@ export function useWebSocket(experimentId: string | undefined) {
     ws.onopen = () => {
       console.log('WebSocket connected');
       setConnected(true);
+      reconnectAttemptsRef.current = 0; // 重置重连计数
 
       // 订阅实验
       ws.send(JSON.stringify({
@@ -58,11 +66,34 @@ export function useWebSocket(experimentId: string | undefined) {
     ws.onclose = () => {
       console.log('WebSocket disconnected');
       setConnected(false);
+
+      // 自动重连（指数退避）
+      const delay = Math.min(
+        1000 * Math.pow(2, reconnectAttemptsRef.current),
+        30000 // 最大延迟 30 秒
+      );
+
+      console.log(`Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current + 1})`);
+
+      reconnectTimeoutRef.current = setTimeout(() => {
+        reconnectAttemptsRef.current++;
+        connect();
+      }, delay);
     };
+  };
+
+  useEffect(() => {
+    connect();
 
     return () => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.close();
+      // 清理重连定时器
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+
+      // 关闭连接
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.close();
       }
     };
   }, [experimentId]);

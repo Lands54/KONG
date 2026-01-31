@@ -58,6 +58,16 @@ async def lifespan(app: FastAPI):
         # 注册实时日志处理器 (全局)
         register_global_handler(StreamingEventHandler())
 
+        # [v3.0 Feature] 启动热重载服务 (Identify core/kgforge/components path)
+        # 获取 core/kgforge/components 的绝对路径
+        # project_root 已在前面计算得到
+        components_path = Path(project_root) / "core" / "kgforge" / "components"
+        
+        # 仅在 components 目录存在时启动
+        if components_path.exists():
+            from python_service.services.hot_reload import start_hot_reload_service
+            start_hot_reload_service(str(components_path))
+
         # 懒加载服务
         from services.lifecycle import preload_all
         

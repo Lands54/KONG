@@ -28,7 +28,7 @@ async def infer(request: InferenceRequest):
     配合之前的“影子实例”确保线程间状态隔离。
     """
     try:
-        from services.inference import InferenceEngine
+        from python_service.services.inference import InferenceEngine
         engine = InferenceEngine()
         
         # 这里的关键：不直接调用同步方法，而是扔进线程池
@@ -44,7 +44,13 @@ async def infer(request: InferenceRequest):
             experiment_id=request.experiment_id
         )
         return result
+        return result
     except Exception as e:
+        # User defined errors should bubble up
+        from python_service.core.errors import PrismError
+        if isinstance(e, PrismError):
+            raise e
+            
         import traceback
         print(f"Error in inference API: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -55,7 +61,7 @@ async def cancel_task(experiment_id: str):
     取消正在运行的任务
     """
     try:
-        from services.inference import InferenceEngine
+        from python_service.services.inference import InferenceEngine
         engine = InferenceEngine()
         success = engine.cancel_task(experiment_id)
         if success:

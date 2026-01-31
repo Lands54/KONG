@@ -158,55 +158,61 @@ export class ExperimentService {
         });
       }
 
-      // 执行批量创建
-      if (dataToCreate.length > 0) {
-        await prisma.experimentData.createMany({ data: dataToCreate });
-      }
-
-      // 2. 存储核心节点数据 (Node 表，用于快速检索/视图)
-      if (result.graph?.nodes) {
-        const nodes = Object.values(result.graph.nodes).map((node: any) => {
-          // 确保 slots 存在，防止 Python端返回旧格式
-          const attributes = node.attributes || {};
-          const metrics = node.metrics || {};
-          const state = node.state || {};
-
-          // 兼容性：如果 metadata 还在，合并进 attributes 用于溯源
-          if (node.metadata) {
-            attributes._meta = node.metadata;
-          }
-          // 兼容旧字段：如果 node.level 或 status 没在 state 里 (理论上 Python 端如果不改 orchestrator 可能还没放进去)
-          // 但我们的 Node 类做了兼容，to_dict 暴露了 slots。
-          // 这里还是做个防御性编程，如果 level 不在 state 里，尝试从顶层拿
-          const level = state.level ?? node.level ?? 0;
-          const parentNodeId = state.parentNodeId ?? node.parentNodeId ?? null;
-
-          return {
-            experimentId,
-            nodeId: node.id,
-            label: node.label || attributes.label || 'Unknown', // 优先用顶层兼容字段
-            level: Number(level),
-            parentNodeId: parentNodeId,
-
-            // Slots (JSON Stringified)
-            attributes: safeStringify(attributes),
-            metrics: safeStringify(metrics),
-            state: safeStringify(state)
-          };
-        });
-
-        await prisma.node.createMany({ data: nodes });
-      }
-
-      // 3. 更新主表状态
+      // 执行批量创建 + 节点存储 + 状态更新 (原子事务)
       const finalStatus = result.status; // 直接使用 Python 结果，支持 'cancelled'
-      await prisma.experiment.update({
-        where: { id: experimentId },
-        data: {
-          status: finalStatus,
-          finalGraph: safeStringify(result.graph)
+
+      await prisma.$transaction(async (tx) => {
+        // 1. 存储全量桶数据 (ExperimentData)
+        if (dataToCreate.length > 0) {
+          await tx.experimentData.createMany({ data: dataToCreate });
         }
+
+        // 2. 存储核心节点数据 (Node 表，用于快速检索/视图)
+        if (result.graph?.nodes) {
+          const nodes = Object.values(result.graph.nodes).map((node: any) => {
+            // 确保 slots 存在，防止 Python端返回旧格式
+            const attributes = node.attributes || {};
+            const metrics = node.metrics || {};
+            const state = node.state || {};
+
+            // 兼容性：如果 metadata 还在，合并进 attributes 用于溯源
+            if (node.metadata) {
+              attributes._meta = node.metadata;
+            }
+            // 兼容旧字段：如果 node.level 或 status 没在 state 里 (理论上 Python 端如果不改 orchestrator 可能还没放进去)
+            // 但我们的 Node 类做了兼容，to_dict 暴露了 slots。
+            // 这里还是做个防御性编程，如果 level 不在 state 里，尝试从顶层拿
+            const level = state.level ?? node.level ?? 0;
+            const parentNodeId = state.parentNodeId ?? node.parentNodeId ?? null;
+
+            return {
+              experimentId,
+              nodeId: node.id,
+              label: node.label || attributes.label || 'Unknown', // 优先用顶层兼容字段
+              level: Number(level),
+              parentNodeId: parentNodeId,
+
+              // Slots (JSON Stringified)
+              attributes: safeStringify(attributes),
+              metrics: safeStringify(metrics),
+              state: safeStringify(state)
+            };
+          });
+
+          await tx.node.createMany({ data: nodes });
+        }
+
+        // 3. 更新主表状态
+        await tx.experiment.update({
+          where: { id: experimentId },
+          data: {
+            status: finalStatus,
+            finalGraph: safeStringify(result.graph)
+          }
+        });
       });
+
+      logger.info(`✅ Transaction committed for experiment ${experimentId}`);
 
       // 4. WebSocket 推送
       const { broadcastStatusUpdate, broadcastGraphUpdate } = await import('../websocket/server');

@@ -8,15 +8,23 @@ import { WebSocketServer, WebSocket } from 'ws';
 
 interface ExtWebSocket extends WebSocket {
   experimentId?: string;
+  isAlive?: boolean;
 }
 
 let wss: WebSocketServer;
+let heartbeatInterval: NodeJS.Timeout;
 
 export function setupWebSocket(server: HTTPServer) {
   wss = new WebSocketServer({ server });
 
   wss.on('connection', (ws: ExtWebSocket) => {
     console.log('WebSocket client connected');
+    ws.isAlive = true;
+
+    // 监听 pong 响应
+    ws.on('pong', () => {
+      ws.isAlive = true;
+    });
 
     ws.on('message', (message: string) => {
       try {
@@ -40,7 +48,20 @@ export function setupWebSocket(server: HTTPServer) {
     });
   });
 
-  console.log('WebSocket server ready');
+  // 心跳检测：每 30 秒发送 ping，清理死连接
+  heartbeatInterval = setInterval(() => {
+    wss.clients.forEach((ws: ExtWebSocket) => {
+      if (ws.isAlive === false) {
+        console.log('Terminating dead WebSocket connection');
+        return ws.terminate();
+      }
+
+      ws.isAlive = false;
+      ws.ping();
+    });
+  }, 30000);
+
+  console.log('WebSocket server ready with heartbeat monitoring');
 }
 
 /**

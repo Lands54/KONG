@@ -9,7 +9,7 @@ import threading
 from typing import Dict, Any, Optional
 from kgforge import get_logger
 from kgforge.models import Graph
-from schemas.graph_schema import graph_to_dict
+from python_service.schemas.graph_schema import graph_to_dict
 from python_service.core.factory import UnifiedFactory
 from kgforge.components.base import TaskCancelledError
 from python_service.core.errors import PrismAuthError, PrismRateLimitError
@@ -108,6 +108,9 @@ class InferenceEngine:
             raise PrismAuthError(message=str(e), details=str(e))
         except openai.RateLimitError as e:
             raise PrismRateLimitError(message=str(e), details=str(e))
+        except PrismError as e:
+            # Allow known system errors to propagate unmodified
+            raise e
         except Exception as e:
             logger.error(f"Inference Pipeline Error: {e}")
             raise RuntimeError(f"Pipeline failure: {str(e)}") from e

@@ -73,9 +73,9 @@ export default function GraphVisualization({ graph, experimentId, onNodeClick }:
           selector: 'node',
           style: {
             'label': 'data(label)',
-            'width': 'label',
-            'height': 'label',
-            'padding': '16px',
+            'width': '120px',   // 默认固定宽度，避免 mapping warning
+            'height': '60px',   // 默认固定高度
+            'padding': '10px',
             'shape': 'roundrectangle',
             'background-color': '#ffffff',
             'border-width': 1,
@@ -86,12 +86,25 @@ export default function GraphVisualization({ graph, experimentId, onNodeClick }:
             'font-size': '12px',
             'font-weight': 700,
             'color': '#1e293b',
-            'text-max-width': '120px',
+            'text-max-width': '110px',
             'text-wrap': 'wrap',
-            'line-height': 1.4,
+            'line-height': 1.2,
             'corner-radius': '4',
             'transition-property': 'background-color, border-color, border-width',
             'transition-duration': 150
+          }
+        },
+        // 仅当节点显式包含 width/height 数据时才应用覆盖
+        {
+          selector: 'node[width]',
+          style: {
+            'width': 'data(width)'
+          }
+        },
+        {
+          selector: 'node[height]',
+          style: {
+            'height': 'data(height)'
           }
         },
         {

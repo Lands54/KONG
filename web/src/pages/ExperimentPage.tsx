@@ -20,14 +20,21 @@ export default function ExperimentPage() {
   const [logs, setLogs] = React.useState<LogEntry[]>([]);
 
   // WebSocket 连接
-  const { lastMessage } = useWebSocket(id);
+  const { lastEvent } = useWebSocket(id);
 
   const fetchExperiment = React.useCallback(() => {
     if (!id) return;
 
     api.experiments.get(id)
       .then((data: any) => {
-        setExperiment(data);
+        setExperiment((prev: any) => ({
+          ...data,
+          // 保留当前已经收到的遥测数据，以防 API 返回的数据有滞后（虽然理应一致，但防御性编程）
+          intermediate_stats: {
+            ...data.intermediate_stats,
+            ...(prev?.intermediate_stats || {})
+          }
+        }));
         setLoading(false);
       })
       .catch(err => {
@@ -36,39 +43,57 @@ export default function ExperimentPage() {
       });
   }, [id]);
 
-  // 处理 WebSocket 消息
+  // 处理 WebSocket 消息 (统一切换到 lastEvent)
   React.useEffect(() => {
-    if (!lastMessage) return;
+    if (!lastEvent) return;
 
-    try {
-      const data = JSON.parse(lastMessage.data);
-
-      // 处理状态更新
-      if (data.type === 'status_update' && data.experimentId === id) {
-        setExperiment((prev: any) => {
-          if (prev) {
-            return { ...prev, status: data.status };
-          }
-          return prev;
-        });
-        if (data.status !== 'running') {
-          fetchExperiment();
+    // 处理状态更新
+    if (lastEvent.type === 'status_update' && lastEvent.experimentId === id) {
+      setExperiment((prev: any) => {
+        if (prev) {
+          return { ...prev, status: lastEvent.data };
         }
-      }
-
-      // 处理图更新
-      if (data.type === 'graph_update' && data.experimentId === id) {
+        return prev;
+      });
+      if (lastEvent.data !== 'running') {
         fetchExperiment();
       }
-
-      // 处理日志
-      if (data.type === 'log' && data.experimentId === id) {
-        setLogs(prev => [...prev, data.log]);
-      }
-    } catch (error) {
-      console.error('Error parsing WebSocket message:', error);
     }
-  }, [lastMessage, id, fetchExperiment]);
+
+    // 处理图更新
+    if (lastEvent.type === 'graph_update' && lastEvent.experimentId === id) {
+      // 后端仍然会在大阶段结束时发送 generic update，触发拉取
+      fetchExperiment();
+    }
+
+    // 处理日志 (LOG)
+    if (lastEvent.type === 'log' && lastEvent.experimentId === id) {
+      // 数据结构与之前保持兼容，或根据 StandardEvent 调整
+      // Python 端: payload = { message, level }
+      // standard event data = payload
+      setLogs(prev => [...prev, lastEvent.data]);
+    }
+
+    // 处理实时遥测 (TELEMETRY) - 核心新增
+    if (lastEvent.type === 'telemetry' && lastEvent.experimentId === id) {
+      const telemetryData = lastEvent.data;
+
+      // 更新中间状态统计
+      if (telemetryData.intermediate_stats) {
+        setExperiment((prev: any) => {
+          if (!prev) return prev;
+          return {
+            ...prev,
+            intermediate_stats: {
+              ...(prev.intermediate_stats || {}),
+              ...telemetryData.intermediate_stats
+            }
+          };
+        });
+      }
+    }
+
+  }, [lastEvent, id, fetchExperiment]);
 
   React.useEffect(() => {
     fetchExperiment();
@@ -206,14 +231,14 @@ export default function ExperimentPage() {
               <div style={{
                 fontSize: '12px',
                 fontWeight: 700,
-                color: experiment.status === 'completed' ? '#10b981' : (experiment.status === 'running' ? '#f59e0b' : '#ef4444'),
+                color: (experiment.status === 'completed') ? '#10b981' : ((experiment.status === 'running') ? '#f59e0b' : '#ef4444'),
                 display: 'flex',
                 alignItems: 'center',
                 gap: '6px',
                 justifyContent: 'flex-end'
               }}>
                 {experiment.status === 'running' && <span className="animate-pulse" style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: 'currentColor' }} />}
-                {experiment.status.toUpperCase()}
+                {(experiment.status || 'UNKNOWN').toUpperCase()}
               </div>
             </div>
 

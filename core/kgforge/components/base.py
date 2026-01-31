@@ -56,9 +56,16 @@ import threading
 class BaseOrchestrator(BaseAppliance, IOrchestrator):
     """编排器辅助基类 (Motherboard)"""
     
-    def __init__(self, config: Optional[Dict[str, Any]] = None):
+    def __init__(self, config: Optional[Dict[str, Any]] = None, **kwargs):
         super().__init__(config)
         self._cancel_event: Optional[threading.Event] = None
+        
+        # 自动组件注入机制 (Plug and Play)
+        # 扫描 kwargs，将所有符合组件接口的对象归集到 self.components 
+        self.components: Dict[str, Any] = {}
+        for key, value in kwargs.items():
+            if isinstance(value, IDescribable):
+                self.components[key] = value
 
     def set_cancellation_event(self, event: threading.Event):
         """注入取消信号"""

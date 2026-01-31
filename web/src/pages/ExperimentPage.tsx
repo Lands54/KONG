@@ -326,10 +326,6 @@ export default function ExperimentPage() {
           <span style={{ fontWeight: 800, color: '#94a3b8' }}>GOAL:</span>
           <span style={{ color: '#475569' }}>{experiment.goal}</span>
         </div>
-        <div style={{ display: 'flex', gap: '6px' }}>
-          <span style={{ fontWeight: 800, color: '#94a3b8' }}>STRATEGY:</span>
-          <span style={{ color: '#475569', fontWeight: 700 }}>{experiment.haltingStrategy}</span>
-        </div>
         <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px', fontFamily: 'monospace' }}>
           <span style={{ fontWeight: 800, color: '#94a3b8' }}>ID:</span>
           <span>{id}</span>
@@ -353,19 +349,18 @@ export default function ExperimentPage() {
           borderRadius: '8px',
           border: '1px solid #e2e8f0',
           overflow: 'hidden',
-          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
+          boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)',
+          position: 'relative' // 锁定定位上下文
         }}>
-          <div style={{ flex: 1, position: 'relative' }}>
+          <div style={{ flex: 1, position: 'relative', minHeight: '150px' }}>
             <GraphVisualization
               graph={getCurrentGraph()}
               experimentId={id!}
               onNodeClick={(node) => setSelectedNode(node)}
             />
           </div>
-          <div style={{ padding: '0 12px 12px 12px' }}>
-            {/* Live Debug Terminal */}
-            <LiveLogPanel logs={logs} height="200px" />
-          </div>
+          {/* Live Debug Terminal - Directly in flex flow for proper upward expansion */}
+          <LiveLogPanel logs={logs} height="200px" />
         </div>
 
         {/* Right Inspection Column */}
@@ -377,6 +372,55 @@ export default function ExperimentPage() {
           flexDirection: 'column',
           gap: '12px'
         }}>
+          {/* New: Experiment Configuration Section */}
+          <div style={{
+            backgroundColor: '#ffffff',
+            padding: '20px',
+            borderRadius: '8px',
+            border: '1px solid #e2e8f0',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+          }}>
+            <h3 style={{ margin: '0 0 16px 0', fontSize: '11px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              EXPERIMENT_CONFIGURATION
+            </h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px' }}>
+                <span style={{ color: '#94a3b8' }}>Orchestrator:</span>
+                <span style={{ color: '#1e293b', fontWeight: 600 }}>{experiment.orchestrator}</span>
+              </div>
+              <div style={{ fontSize: '12px' }}>
+                <div style={{ color: '#94a3b8', marginBottom: '8px' }}>Components:</div>
+                <div style={{
+                  backgroundColor: '#f8fafc',
+                  padding: '10px',
+                  borderRadius: '6px',
+                  border: '1px solid #e2e8f0',
+                  fontFamily: 'monospace',
+                  fontSize: '11px',
+                  color: '#475569',
+                  whiteSpace: 'pre-wrap',
+                  maxHeight: '150px',
+                  overflowY: 'auto'
+                }}>
+                  {(() => {
+                    try {
+                      const comps = typeof experiment.components === 'string'
+                        ? JSON.parse(experiment.components)
+                        : experiment.components;
+                      return Object.entries(comps || {}).map(([slot, impl]) => (
+                        <div key={slot} style={{ marginBottom: '4px' }}>
+                          <span style={{ color: '#3b82f6' }}>{slot}</span>: <span style={{ color: '#10b981' }}>{String(impl)}</span>
+                        </div>
+                      ));
+                    } catch (e) {
+                      return 'No configuration data found.';
+                    }
+                  })()}
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div style={{
             backgroundColor: '#ffffff',
             padding: '20px',

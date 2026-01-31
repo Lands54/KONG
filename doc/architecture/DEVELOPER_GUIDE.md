@@ -127,62 +127,88 @@ print_graph_summary(my_graph, title="融合后图状态")
 
 ## 5. 数据结构操作 (Data Structures)
 
-KGForge 采用 **Slot-based** 设计模式，所有图元素（Node, Edge）都继承自 `GraphElement`，拥有四个标准数据插槽：
-1.  **Attributes** (特征): 静态属性（如 label, relation）。
-2.  **Metrics** (指标): 量化数值（如 weight, confidence）。
-3.  **State** (状态): 流程控制标记（如 expansion_count）。
-4.  **Meta** (元数据): 溯源信息（如 source_model）。
+KGForge 采用 **Slot-based** 设计模式，所有图元素（Node, Edge）都继承自 `GraphElement`。为了兼顾底层严谨性与开发效率，系统提供了“双层访问机制”：**高效插槽 (Slots)** + **直观属性 (Properties)**。
 
-### 5.1 创建节点 (Node)
+### 5.1 基础概念：四大标准插槽 (Slots)
+| 插槽 | 存储内容 | 推荐方法 |
+| :--- | :--- | :--- |
+| **Attributes** | 身份特征、静态描述 (如 label, category) | `.attr()` / `.set_attr()` |
+| **Metrics** | 量化数值、分数 (如 weight, confidence) | `.metric()` / `.set_metric()` |
+| **State** | 流程控制标记 (如 processed, expanded) | `.state()` / `.set_state()` |
+| **Meta** | 溯源元数据、原始信息 (如 source_doc) | `.meta()` / `.set_meta()` |
+
+### 5.2 创建与访问节点 (Node)
 ```python
 from kgforge.models.graph import Node
 
-# 基础创建
-node = Node(node_id="concept_nlp", label="Natural Language Processing")
+# 1. 懒人模式 (自动生成 10 位短 ID)
+node_auto = Node(label="Apple")
+# id: "7f1e3c2b12", label: "Apple"
 
-# 使用插槽填充数据
-node.set_attr("category", "Technology") \
-    .set_metric("importance", 0.95) \
-    .set_state("processed", False)
+# 2. 快捷模式 (ID = Label)
+node_quick = Node("Apple")
+# id: "Apple", label: "Apple"
 
-# 访问数据
-print(node.attr("label"))       # "Natural Language Processing"
-print(node.metric("importance")) # 0.95
+# 3. 精确模式 (手动指定)
+node_exact = Node(node_id="fruit_01", label="Apple")
+
+# 4. 属性访问 (推荐！)
+node_exact.label = "Big Apple"
+
+# 5. 批量更新与链式调用
+node_exact.update_attrs({"color": "red"}).set_metric("score", 0.9)
 ```
 
-### 5.2 创建边 (Edge)
+
+### 5.3 创建与访问边 (Edge)
+边现在拥有独立的 `id`（自动生成 8 位短码），支持同节点对之间的多重关系。
 ```python
 from kgforge.models.graph import Edge
 
-# 基础创建 (Directed: Source -> Target)
-edge = Edge(source="concept_nlp", target="concept_ai", relation="part_of")
+# 1. 创建 (source, target, relation)
+edge = Edge(source="apple_01", target="fruit_cat", relation="belongs_to")
 
-# 添加权重和元数据
-edge.set_metric("weight", 0.8) \
-    .set_meta("extractor", "rebel-large")
+# 2. 属性访问
+edge.relation = "is_part_of"
+print(f"{edge.source} --({edge.relation})--> {edge.target} [ID: {edge.id}]")
+
+# 3. 克隆 (物理隔离，防止 Pipeline 数据污染)
+edge_snapshot = edge.clone()
 ```
 
-### 5.3 操作图 (Graph)
-`Graph` 是节点的容器，同时维护拓扑结构。
+### 5.4 操作图 (Graph)
+`Graph` 是节点的容器，负责拓扑管理和深拷贝。
 
 ```python
 from kgforge.models.graph import Graph
 
-# 初始化
-graph = Graph(graph_id="subgraph_01")
-graph.source = "gpt-4-turbo"
+# 1. 初始化与元数据
+graph = Graph(graph_id="v1_snapshot")
+graph.set_meta("version", "1.1").set_meta("author", "kong_ai")
 
-# 添加元素
-graph.add_node(node)
+# 2. 添加元素 (支持冲突保护)
+graph.add_node(node, overwrite=True) # 默认覆盖
 graph.add_edge(edge)
 
-# 拓扑查询
-neighbors = graph.get_neighbors("concept_nlp")  # ["concept_ai"]
-degree = graph.get_node_degree("concept_nlp")   # 1
+# 3. 深拷贝 (核心中的核心！)
+# 在进行破坏性操作前，建议始终使用 clone() 确保数据隔离
+new_pipeline_stage_graph = graph.clone()
 
-# 序列化 (用于传输或保存)
-data_dict = graph.to_dict()
+# 4. 拓扑查询
+neighbors = graph.get_neighbors("apple_01")
+successors = graph.get_successors("apple_01")
+
+# 5. 序列化
+data_dict = graph.to_dict() # 导出为 JSON 友好格式
+new_g = Graph.from_dict(data_dict) # 从持久化数据恢复
 ```
+
+### 5.5 数据处理原则 (Best Practices)
+1.  **首选属性**：对于 `label` 和 `relation`，直写 `.label = "xxx"` 即可。
+2.  **Pipeline 隔离**：在 Orchestrator 的不同 Stage 之间传递图时，**强烈建议使用 `graph.clone()`**。这能确保遥测（Telemetry）系统记录的中间步骤图状态是准确的。
+3.  **链式编程**：利用 `update_attrs().set_metric()` 链式调用保持组件代码简洁。
+
+---
 
 ---
 

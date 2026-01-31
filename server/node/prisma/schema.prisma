@@ -14,6 +14,8 @@ model Experiment {
   goal            String
   initialEvidence String
   haltingStrategy String
+  orchestrator    String    @default("dynamic_halting")
+  components      String    @default("{}") // 序列化的组件配置 (JSON)
   status          String    @default("running") // running, completed, failed
   usedFrontendApiKey Boolean @default(false)
   

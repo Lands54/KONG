@@ -244,7 +244,6 @@ export default function GraphVisualization({ graph, experimentId, onNodeClick }:
         const formatValue = (key: string, value: any): string => {
           if (value === null || value === undefined) return '';
           if (typeof value === 'number') {
-            // 根据字段类型决定小数位数
             if (key.includes('value') || key.includes('importance') || key.includes('gain')) {
               return value.toFixed(3);
             } else if (key.includes('uncertainty') || key.includes('confidence') || key.includes('consistency')) {
@@ -254,10 +253,16 @@ export default function GraphVisualization({ graph, experimentId, onNodeClick }:
             }
           }
           if (typeof value === 'boolean') {
-            return value ? '是' : '否';
+            return value ? 'YES' : 'NO';
           }
           if (typeof value === 'object') {
-            return JSON.stringify(value); // 简化显示
+            // 如果是对象，尝试精简显示
+            try {
+              const str = JSON.stringify(value);
+              return str.length > 40 ? str.substring(0, 37) + '...' : str;
+            } catch (e) {
+              return '[Complex Data]';
+            }
           }
           return String(value);
         };
@@ -269,6 +274,7 @@ export default function GraphVisualization({ graph, experimentId, onNodeClick }:
           .map(key => {
             const label = fieldLabels[key] || key;
             const value = formatValue(key, metadata[key]);
+            if (!value) return '';
             return `<div style="margin-bottom: 4px;"><strong style="color: #475569;">${label}:</strong> <span style="color: #1e293b;">${value}</span></div>`;
           })
           .join('');
@@ -276,7 +282,7 @@ export default function GraphVisualization({ graph, experimentId, onNodeClick }:
         // 构建 Metrics 显示
         const metricsContent = Object.keys(metrics).length > 0
           ? `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0;">
-              <div style="font-weight: 600; color: #64748b; font-size: 10px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">量化指标 (Metrics)</div>
+              <div style="font-weight: 600; color: #64748b; font-size: 10px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Metrics</div>
               ${Object.entries(metrics).map(([key, value]) => {
             const label = fieldLabels[key] || key.replace(/_/g, ' ');
             return `<div style="margin-bottom: 3px; font-size: 10px;"><strong style="color: #94a3b8;">${label}:</strong> <span style="color: #64748b;">${formatValue(key, value)}</span></div>`;
@@ -285,26 +291,27 @@ export default function GraphVisualization({ graph, experimentId, onNodeClick }:
           : '';
 
         // 构建 Attributes 显示
-        const attrKeys = Object.keys(attributes).filter(k => k !== 'label' && k !== 'id'); // 过滤掉基础字段
+        const internalKeys = new Set(['label', 'id', 'attributes', 'metadata', 'state', 'metrics', '_meta', 'enriched']);
+        const attrKeys = Object.keys(attributes).filter(k => !internalKeys.has(k) && typeof attributes[k] !== 'function');
         const attributesContent = attrKeys.length > 0
           ? `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0;">
-              <div style="font-weight: 600; color: #64748b; font-size: 10px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">语义属性 (Attributes)</div>
-              ${attrKeys.slice(0, 5).map(key => { // 限制显示数量，避免过长
+              <div style="font-weight: 600; color: #64748b; font-size: 10px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Attributes</div>
+              ${attrKeys.slice(0, 8).map(key => {
             const label = key;
-            const valStr = String(attributes[key]);
-            const displayVal = valStr.length > 30 ? valStr.substring(0, 27) + '...' : valStr;
+            const displayVal = formatValue(key, attributes[key]);
+            if (displayVal === '{}' || displayVal === '[]') return ''; // 隐藏空对象
             return `<div style="margin-bottom: 3px; font-size: 10px;"><strong style="color: #94a3b8;">${label}:</strong> <span style="color: #64748b;">${displayVal}</span></div>`;
-          }).join('')}
-              ${attrKeys.length > 5 ? `<div style="font-size: 9px; color: #cbd5e1; margin-top: 2px;">+${attrKeys.length - 5} more...</div>` : ''}
+          }).filter(html => html !== '').join('')}
+              ${attrKeys.length > 8 ? `<div style="font-size: 9px; color: #cbd5e1; margin-top: 2px;">+${attrKeys.length - 8} more...</div>` : ''}
             </div>`
           : '';
 
-        // 构建其他 metadata 字段显示
-        const otherFields = Object.keys(metadata).filter(key => !mainFields.includes(key));
+        // 构建其他 metadata 字段显示 (过滤掉已显示的)
+        const otherFields = Object.keys(metadata).filter(key => !mainFields.includes(key) && metadata[key] !== null && metadata[key] !== undefined);
         const otherContent = otherFields.length > 0
           ? `<div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0;">
-              <div style="font-weight: 600; color: #64748b; font-size: 10px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">其他元数据</div>
-              ${otherFields.map(key => {
+              <div style="font-weight: 600; color: #64748b; font-size: 10px; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Metadata</div>
+              ${otherFields.slice(0, 5).map(key => {
             const label = fieldLabels[key] || key.replace(/_/g, ' ');
             const value = formatValue(key, metadata[key]);
             return `<div style="margin-bottom: 3px; font-size: 10px;"><strong style="color: #94a3b8;">${label}:</strong> <span style="color: #64748b;">${value}</span></div>`;
@@ -361,10 +368,12 @@ export default function GraphVisualization({ graph, experimentId, onNodeClick }:
 
         // 初始位置
         const pos = node.renderedPosition();
-        const container = cyRef.current!.container();
-        const containerRect = container.getBoundingClientRect();
-        tooltip.style.left = `${containerRect.left + pos.x + 15}px`;
-        tooltip.style.top = `${containerRect.top + pos.y + 15}px`;
+        const container = cyRef.current?.container();
+        if (container) {
+          const containerRect = container.getBoundingClientRect();
+          tooltip.style.left = `${containerRect.left + pos.x + 15}px`;
+          tooltip.style.top = `${containerRect.top + pos.y + 15}px`;
+        }
       });
 
       cyRef.current.on('mouseout', 'node', (evt: any) => {
@@ -461,24 +470,6 @@ export default function GraphVisualization({ graph, experimentId, onNodeClick }:
           </select>
         </div>
 
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px', fontFamily: 'monospace' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div style={{ width: '10px', height: '10px', borderRadius: '2px', backgroundColor: '#22c55e', border: '1px solid #166534' }}></div>
-            <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 500 }}>HALT-ACCEPT</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div style={{ width: '10px', height: '10px', borderRadius: '2px', backgroundColor: '#cbd5e1', border: '1px dashed #94a3b8', opacity: 0.6 }}></div>
-            <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 500 }}>HALT-DROP</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div style={{ width: '10px', height: '10px', borderRadius: '2px', backgroundColor: '#ffffff', border: '1.5px solid #e2e8f0' }}></div>
-            <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 500 }}>LOOP</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div style={{ width: '10px', height: '10px', borderRadius: '2px', backgroundColor: '#fffbeb', border: '2px solid #f59e0b' }}></div>
-            <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 500 }}>HITL</span>
-          </div>
-        </div>
       </div>
 
       {/* 图形容器 */}
@@ -533,10 +524,9 @@ function getLayoutConfig(layoutType: LayoutType): cytoscape.LayoutOptions {
       return {
         name: 'grid',
         ...baseConfig,
-        rows: undefined, // 自动计算
-        cols: undefined, // 自动计算
-        position: (node: any) => undefined // 自动定位
-      };
+        rows: undefined,
+        cols: undefined
+      } as any;
 
     case 'circle':
       return {
@@ -567,18 +557,17 @@ function getLayoutConfig(layoutType: LayoutType): cytoscape.LayoutOptions {
       return {
         name: 'cose',
         ...baseConfig,
-        quality: 'default', // 'default', 'draft'
         nodeDimensionsIncludeLabels: true,
-        nodeRepulsion: 4500,
-        idealEdgeLength: 50,
-        edgeElasticity: 0.45,
+        nodeRepulsion: (node: any) => 4500,
+        idealEdgeLength: (edge: any) => 50,
+        edgeElasticity: (edge: any) => 0.45,
         nestingFactor: 0.1,
         gravity: 0.25,
         numIter: 2500,
         initialTemp: 200,
         coolingFactor: 0.95,
         minTemp: 1.0
-      };
+      } as any;
 
     default:
       return {

@@ -20,6 +20,7 @@ interface NodeMetadataPanelProps {
  */
 export default function NodeMetadataPanel({ node, onClose }: NodeMetadataPanelProps) {
     const [activeTab, setActiveTab] = useState<'all' | 'metrics' | 'attributes' | 'state'>('all');
+    const [showRaw, setShowRaw] = useState(false);
 
     if (!node) return null;
 
@@ -43,21 +44,25 @@ export default function NodeMetadataPanel({ node, onClose }: NodeMetadataPanelPr
     const statusObj = getStatusStyle(node.status);
 
     // 数据列表条目
-    const DataItem = ({ label, value, category }: { label: string, value: any, category?: string }) => (
+    const DataItem = ({ label, value, isRaw = false }: { label: string, value: any, isRaw?: boolean }) => (
         <div style={{
             display: 'flex',
             justifyContent: 'space-between',
             padding: '8px 0',
             borderBottom: '1px solid #f1f5f9',
-            fontSize: '13px'
+            fontSize: '13px',
+            opacity: isRaw ? 0.7 : 1,
+            backgroundColor: isRaw ? '#fff7ed' : 'transparent'
         }}>
-            <span style={{ color: '#64748b', fontWeight: 500 }}>{label}</span>
+            <span style={{ color: isRaw ? '#ea580c' : '#64748b', fontWeight: isRaw ? 600 : 500 }}>
+                {isRaw ? `[DEV] ${label}` : label}
+            </span>
             <span style={{
                 color: '#334155',
                 textAlign: 'right',
                 wordBreak: 'break-all',
                 maxWidth: '60%',
-                fontFamily: typeof value === 'number' ? 'monospace' : 'inherit'
+                fontFamily: 'monospace'
             }}>
                 {typeof value === 'object' ? JSON.stringify(value) :
                     (typeof value === 'number' ? value.toFixed(4).replace(/\.?0+$/, '') : String(value))}
@@ -67,7 +72,19 @@ export default function NodeMetadataPanel({ node, onClose }: NodeMetadataPanelPr
 
     // 渲染分段
     const renderSection = (title: string, data: Record<string, any>, icon: string, color: string = '#64748b') => {
-        const entries = Object.entries(data).filter(([_, v]) => v !== undefined && v !== null);
+        const internalBlacklist = new Set(['label', 'enriched', 'enrich_ts', 'id', 'node_id', 'attributes', 'metadata', 'state', 'metrics']);
+
+        const entries = Object.entries(data).filter(([k, v]) => {
+            if (v === undefined || v === null) return false;
+            // 如果不是 DEV 模式，执行严格过滤
+            if (!showRaw) {
+                if (k.startsWith('_') || internalBlacklist.has(k)) return false;
+                if (typeof v === 'object' && Object.keys(v).length === 0) return false;
+                if ((k === 'attributes' || k === 'metadata' || k === 'state' || k === 'metrics') && typeof v === 'object') return false;
+            }
+            return true;
+        });
+
         if (entries.length === 0) return null;
 
         return (
@@ -88,7 +105,7 @@ export default function NodeMetadataPanel({ node, onClose }: NodeMetadataPanelPr
                 </h4>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                     {entries.map(([key, val]) => (
-                        <DataItem key={key} label={key} value={val} />
+                        <DataItem key={key} label={key} value={val} isRaw={showRaw && (key.startsWith('_') || internalBlacklist.has(key))} />
                     ))}
                 </div>
             </div>
@@ -115,9 +132,10 @@ export default function NodeMetadataPanel({ node, onClose }: NodeMetadataPanelPr
             display: 'flex',
             flexDirection: 'column',
             zIndex: 1000,
-            border: '1px solid #cbd5e1',
+            border: showRaw ? '2px solid #ea580c' : '1px solid #cbd5e1',
             fontFamily: 'SF Mono, Monaco, Cascadia Code, monospace',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            transition: 'all 0.2s'
         }}>
             {/* Minimal Header */}
             <div style={{
@@ -126,17 +144,49 @@ export default function NodeMetadataPanel({ node, onClose }: NodeMetadataPanelPr
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                backgroundColor: '#f1f5f9'
+                backgroundColor: showRaw ? '#fff7ed' : '#f1f5f9'
             }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: statusObj.bg === '#f3f4f6' ? '#64748b' : statusObj.text }}></div>
                     <span style={{ fontSize: '14px', fontWeight: 700, color: '#1e293b' }}>{node.label}</span>
                 </div>
-                <button onClick={onClose} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '18px', color: '#94a3b8' }}>✕</button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <button
+                        onClick={() => setShowRaw(!showRaw)}
+                        style={{
+                            border: showRaw ? '1px solid #ea580c' : '1px solid #94a3b8',
+                            background: showRaw ? '#ea580c' : 'transparent',
+                            color: showRaw ? 'white' : '#64748b',
+                            borderRadius: '4px',
+                            padding: '2px 8px',
+                            fontSize: '10px',
+                            fontWeight: 800,
+                            cursor: 'pointer',
+                            letterSpacing: '0.05em'
+                        }}
+                    >
+                        {showRaw ? '[DEV_ON]' : '[DEV_OFF]'}
+                    </button>
+                    <button onClick={onClose} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '18px', color: '#94a3b8' }}>✕</button>
+                </div>
             </div>
 
             {/* Scientific List View */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
+                {showRaw && (
+                    <div style={{
+                        backgroundColor: '#fff7ed',
+                        border: '1px solid #ffedd5',
+                        padding: '12px',
+                        borderRadius: '6px',
+                        marginBottom: '20px',
+                        fontSize: '11px',
+                        color: '#9a3412',
+                        lineHeight: '1.4'
+                    }}>
+                        <strong>DEBUG_OVERRIDE_ACTIVE:</strong> Showing raw internal data structures and technical flags.
+                    </div>
+                )}
                 {/* Status as a List Item First */}
                 <div style={{ marginBottom: '24px', backgroundColor: '#f8fafc', padding: '10px', borderRadius: '6px' }}>
                     <DataItem label="EXEC_STATUS" value={node.status || 'UNKNOWN'} />

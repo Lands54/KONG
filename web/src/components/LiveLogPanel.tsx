@@ -14,12 +14,13 @@ interface LiveLogPanelProps {
 export const LiveLogPanel: React.FC<LiveLogPanelProps> = ({ logs, height = '300px' }) => {
     const scrollRef = useRef<HTMLDivElement>(null);
     const [autoScroll, setAutoScroll] = useState(true);
+    const [isCollapsed, setIsCollapsed] = useState(false);
 
     useEffect(() => {
-        if (autoScroll && scrollRef.current) {
+        if (!isCollapsed && autoScroll && scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
-    }, [logs, autoScroll]);
+    }, [logs, autoScroll, isCollapsed]);
 
     const handleScroll = () => {
         if (!scrollRef.current) return;
@@ -42,12 +43,16 @@ export const LiveLogPanel: React.FC<LiveLogPanelProps> = ({ logs, height = '300p
         <div style={{
             display: 'flex',
             flexDirection: 'column',
-            height: height,
+            height: isCollapsed ? '36px' : height,
             backgroundColor: '#0f172a',
-            borderRadius: '8px',
+            borderRadius: '0 0 8px 8px',
             overflow: 'hidden',
-            border: '1px solid #334155',
+            borderTop: '1px solid #334155',
             fontFamily: '"JetBrains Mono", "Fira Code", monospace',
+            transition: 'height 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+            flexShrink: 0,
+            width: '100%',
+            position: 'relative'
         }}>
             <div style={{
                 padding: '8px 16px',
@@ -55,54 +60,72 @@ export const LiveLogPanel: React.FC<LiveLogPanelProps> = ({ logs, height = '300p
                 borderBottom: '1px solid #334155',
                 display: 'flex',
                 justifyContent: 'space-between',
-                alignItems: 'center'
-            }}>
+                alignItems: 'center',
+                cursor: 'pointer'
+            }} onClick={() => setIsCollapsed(!isCollapsed)}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#22c55e', boxShadow: '0 0 8px #22c55e' }} />
                     <span style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        Live Terminal
+                        Live Terminal {isCollapsed ? '(Collapsed)' : ''}
                     </span>
                 </div>
-                <div style={{ fontSize: '10px', color: '#64748b' }}>
-                    {logs.length} Lines • {autoScroll ? 'Following' : 'Paused'}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ fontSize: '10px', color: '#64748b' }}>
+                        {!isCollapsed && `${logs.length} Lines • ${autoScroll ? 'Following' : 'Paused'}`}
+                    </div>
+                    <button style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#94a3b8',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '0 4px'
+                    }}>
+                        {isCollapsed ? '□' : '—'}
+                    </button>
                 </div>
             </div>
 
-            <div
-                ref={scrollRef}
-                onScroll={handleScroll}
-                style={{
-                    flex: 1,
-                    overflowY: 'auto',
-                    padding: '12px',
-                    fontSize: '11px',
-                    lineHeight: '1.6',
-                    color: '#e2e8f0'
-                }}
-            >
-                {logs.length === 0 ? (
-                    <div style={{ color: '#475569', fontStyle: 'italic', textAlign: 'center', marginTop: '40px' }}>
-                        Waiting for log stream...
-                        <div style={{ marginTop: '8px', fontSize: '10px' }}>
-                            (Initializing WebSocket connection)
+            {!isCollapsed && (
+                <div
+                    ref={scrollRef}
+                    onScroll={handleScroll}
+                    style={{
+                        flex: 1,
+                        overflowY: 'auto',
+                        padding: '12px',
+                        fontSize: '11px',
+                        lineHeight: '1.6',
+                        color: '#e2e8f0'
+                    }}
+                >
+                    {logs.length === 0 ? (
+                        <div style={{ color: '#475569', fontStyle: 'italic', textAlign: 'center', marginTop: '40px' }}>
+                            Waiting for log stream...
+                            <div style={{ marginTop: '8px', fontSize: '10px' }}>
+                                (Initializing WebSocket connection)
+                            </div>
                         </div>
-                    </div>
-                ) : (
-                    logs.map((log, index) => (
-                        <div key={index} style={{ marginBottom: '2px', display: 'flex', gap: '12px' }}>
-                            <span style={{ color: '#64748b', minWidth: '70px', userSelect: 'none' }}>
-                                {new Date(Number(log.timestamp) * 1000).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                            </span>
-                            <span style={{ color: getLevelColor(log.level), fontWeight: 700, minWidth: '50px', userSelect: 'none' }}>
-                                {log.level}
-                            </span>
-                            <span style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-                                {log.message}
-                            </span>
-                        </div>
-                    ))
-                )}
-            </div>
+                    ) : (
+                        logs.map((log, index) => (
+                            <div key={index} style={{ marginBottom: '2px', display: 'flex', gap: '12px' }}>
+                                <span style={{ color: '#64748b', minWidth: '70px', userSelect: 'none' }}>
+                                    {new Date(Number(log.timestamp) * 1000).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                                </span>
+                                <span style={{ color: getLevelColor(log.level), fontWeight: 700, minWidth: '50px', userSelect: 'none' }}>
+                                    {log.level}
+                                </span>
+                                <span style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
+                                    {log.message}
+                                </span>
+                            </div>
+                        ))
+                    )}
+                </div>
+            )}
         </div>
     );
 };

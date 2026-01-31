@@ -15,15 +15,14 @@ const PYTHON_API_URL = DEFAULT_PYTHON_API_URL;
  * 通用序列化函数
  */
 function safeStringify(obj: any): string {
-  const seen = new WeakSet();
-  return JSON.stringify(obj, (key, value) => {
-    if (typeof value === 'function' || value === undefined) return undefined;
-    if (typeof value === 'object' && value !== null) {
-      if (seen.has(value)) return '[Circular]';
-      seen.add(value);
-    }
-    return value;
-  });
+  try {
+    return JSON.stringify(obj, (key, value) => {
+      if (typeof value === 'function' || value === undefined) return undefined;
+      return value;
+    });
+  } catch (err) {
+    return String(obj);
+  }
 }
 
 export class ExperimentService {
@@ -46,6 +45,8 @@ export class ExperimentService {
         goal: data.goal,
         initialEvidence: data.initialEvidence,
         haltingStrategy: data.haltingStrategy,
+        orchestrator: data.orchestrator || 'dynamic_halting',
+        components: data.components ? safeStringify(data.components) : '{}',
         status: 'running',
         usedFrontendApiKey: !!(data.apiKey && data.apiKey.trim()),
         datasetId: data.datasetRef?.datasetId ?? null,
@@ -54,7 +55,7 @@ export class ExperimentService {
       }
     });
 
-    // 异步执行
+    // 异步执行 (使用生成的 ID)
     this.runInferenceAsync(experiment.id, data).catch(err => {
       logger.error(`Experiment ${experiment.id} runtime error:`, err);
     });

@@ -16,6 +16,7 @@ class GraphElement:
         self._metrics: Dict[str, float] = {}
         self._state: Dict[str, Any] = {}
         self._metadata: Dict[str, Any] = {}
+        self._exec_status: str = "LOOP" # 核心执行状态，作为 Pipeline 级的一等公民
 
     # --- Attributes Slot (身份特征) ---
     def attr(self, key: str, default: Any = None) -> Any:
@@ -43,14 +44,33 @@ class GraphElement:
 
     # --- State Slot (流程状态) ---
     def state(self, key: str, default: Any = None) -> Any:
+        if key == "status": return self._exec_status
         return self._state.get(key, default)
 
     def set_state(self, key: str, value: Any) -> 'GraphElement':
-        self._state[key] = value
+        if key == "status":
+            self._exec_status = value
+        else:
+            self._state[key] = value
         return self
 
     def update_state(self, data: Dict[str, Any]) -> 'GraphElement':
-        self._state.update(data)
+        # 保护性检查：不允许通过通用 update 篡改核心状态
+        clean_data = {k: v for k, v in data.items() if k != "status"}
+        self._state.update(clean_data)
+        return self
+
+    # --- Pipeline Status Control (核心执行流转) ---
+    def get_status(self) -> str:
+        """获取当前节点的执行状态"""
+        return self._exec_status
+
+    def status(self, value: str) -> 'GraphElement':
+        """
+        设置节点的执行状态（支持链式调用）
+        这是 Pipeline 级别的最高指令。
+        """
+        self._exec_status = value
         return self
 
     # --- Meta Slot (溯源元数据) ---
@@ -80,6 +100,7 @@ class GraphElement:
         target._metrics = copy.deepcopy(self._metrics)
         target._state = copy.deepcopy(self._state)
         target._metadata = copy.deepcopy(self._metadata)
+        target._exec_status = self._exec_status
         return target
 
 
@@ -102,9 +123,17 @@ class Node(GraphElement):
         
         self.subgraph: Optional['Graph'] = None
         
+        # 核心状态初始化 (优先于批量处理)
+        if "status" in kwargs:
+            self.status(kwargs.pop("status"))
+
         # 批量处理其他初始化数据
         for k, v in kwargs.items():
-            if k == "state": self._state.update(v)
+            if k == "state": 
+                # 处理 state 字典中可能存在的 status
+                s = v.get("status")
+                if s: self.status(s)
+                self.update_state(v)
             elif k == "metrics": self._metrics.update(v)
             elif k == "metadata": self._metadata.update(v)
             else: self.set_attr(k, v)
@@ -132,6 +161,7 @@ class Node(GraphElement):
     def to_dict(self):
         return {
             "id": self.id,
+            "status": self._exec_status,  # 提升为顶层字段
             "attributes": self._attrs,
             "metrics": self._metrics,
             "state": self._state,

@@ -17,7 +17,7 @@ export default function ParameterConfigPanel({ spec, values, onChange, onBatchCh
     // Load presets for this specific component type
     React.useEffect(() => {
         const loadPresets = () => {
-            const prefix = `kong_comp_preset_${spec.id}_`;
+            const prefix = `prism_comp_preset_${spec.id}_`;
             const keys = Object.keys(localStorage).filter(k => k.startsWith(prefix));
             setSavedPresets(keys.map(k => k.replace(prefix, '')));
         };
@@ -26,14 +26,14 @@ export default function ParameterConfigPanel({ spec, values, onChange, onBatchCh
 
     const handleSavePreset = () => {
         if (!presetName.trim()) return;
-        const key = `kong_comp_preset_${spec.id}_${presetName}`;
+        const key = `prism_comp_preset_${spec.id}_${presetName}`;
         localStorage.setItem(key, JSON.stringify(values));
         setSavedPresets(prev => [...new Set([...prev, presetName])]);
         setPresetName('');
     };
 
     const handleLoadPreset = (name: string) => {
-        const key = `kong_comp_preset_${spec.id}_${name}`;
+        const key = `prism_comp_preset_${spec.id}_${name}`;
         const raw = localStorage.getItem(key);
         if (raw && onBatchChange) {
             try {
@@ -46,7 +46,7 @@ export default function ParameterConfigPanel({ spec, values, onChange, onBatchCh
     };
 
     const handleDeletePreset = (name: string) => {
-        const key = `kong_comp_preset_${spec.id}_${name}`;
+        const key = `prism_comp_preset_${spec.id}_${name}`;
         localStorage.removeItem(key);
         setSavedPresets(prev => prev.filter(p => p !== name));
     };

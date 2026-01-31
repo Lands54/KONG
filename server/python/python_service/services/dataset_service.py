@@ -49,7 +49,7 @@ class DatasetService:
 
     def __init__(self):
         # 获取项目根目录 (Independent calculation)
-        # server/python/python_service/services/dataset_service.py -> KONG/ (4 levels up)
+        # server/python/python_service/services/dataset_service.py -> PRISM/ (4 levels up)
         self._root = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../'))
         self._cache: Dict[Tuple[str, str], Any] = {}  # (dataset_id, split) -> dataset split object
         # DocRED 本地 JSON 缓存（避免每次分页都 json.load 大文件导致卡顿/阻塞）
@@ -317,7 +317,7 @@ class DatasetService:
 
         headers = {
             # Wikipedia 对无 UA/异常 UA 有时会 403，这里加一个稳定 UA
-            "User-Agent": "KONG-DynHalting/0.1 (+https://example.com; contact: local-dev)"
+            "User-Agent": "PRISM-DynHalting/0.1 (+https://example.com; contact: local-dev)"
         }
         resp = requests.get(
             "https://en.wikipedia.org/w/api.php",

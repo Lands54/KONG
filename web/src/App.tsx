@@ -4,6 +4,7 @@ import ExperimentPage from './pages/ExperimentPage';
 import CreateExperimentForm from './components/CreateExperimentForm';
 import ExperimentListItem from './components/ExperimentListItem';
 import ApiKeyDialog from './components/ApiKeyDialog';
+import PrismLogo from './components/PrismLogo';
 import { ErrorToast } from './components/ErrorToast';
 import { api } from './services/apiClient';
 
@@ -115,19 +116,31 @@ function ExperimentList() {
 
   return (
     <div style={{ padding: '40px 20px', maxWidth: '1000px', margin: '0 auto' }}>
-      <header style={{ marginBottom: '48px' }}>
-        <h1 style={{
-          fontSize: '24px',
-          fontWeight: 800,
-          color: '#1e293b',
-          letterSpacing: '-0.03em',
-          marginBottom: '8px'
-        }}>
-          KONG <span style={{ color: '#3b82f6', fontWeight: 400 }}>RESEARCH</span>
-        </h1>
-        <p style={{ color: '#64748b', fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-          Dynamic Halting & Recursive Knowledge Forge
-        </p>
+      <header style={{ marginBottom: '48px', display: 'flex', alignItems: 'center', gap: '20px' }}>
+        <PrismLogo size={48} />
+        <div>
+          <h1 style={{
+            fontSize: '28px',
+            fontWeight: 800,
+            color: '#1e293b',
+            letterSpacing: '-0.04em',
+            marginBottom: '4px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            PRISM <span style={{ color: '#64748b', fontWeight: 400, fontSize: '18px' }}>CORE</span>
+          </h1>
+          <p style={{
+            color: '#94a3b8',
+            fontSize: '11px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.15em',
+            fontWeight: 600
+          }}>
+            Platform for Reasoning, Inference, and Semantic Modeling
+          </p>
+        </div>
       </header>
 
       {!showCreateForm ? (

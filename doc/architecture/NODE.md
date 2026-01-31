@@ -1,6 +1,6 @@
-# KONG Server Architecture (Node.js)
+# PRISM Server Architecture (Node.js)
 
-本文档描述了 **KONG Node.js Service (Express)** 的架构设计。它在 KONG 生态系统中扮演着**持久层守门人**和**实时消息总线**的角色，有效地将 Python 服务的计算结果与 SQL 数据库解耦。
+本文档描述了 **PRISM Node.js Service (Express)** 的架构设计。它在 PRISM 生态系统中扮演着**持久层守门人**和**实时消息总线**的角色，有效地将 Python 服务的计算结果与 SQL 数据库解耦。
 
 ## 1. 核心架构图 (High-Level Architecture)
 

@@ -1,6 +1,6 @@
 # KGForge 开发者指南 (Developer Guide)
 
-本文档旨在为 KGForge 组件开发者提供关于**日志记录**、**数据监测**、**指标统计**及**调试工具**的标准接口使用指南。遵循本指南可确保您的组件与 KONG 系统的其他部分（如前端可视化、遥测系统）无缝集成。
+本文档旨在为 KGForge 组件开发者提供关于**日志记录**、**数据监测**、**指标统计**及**调试工具**的标准接口使用指南。遵循本指南可确保您的组件与 PRISM 系统的其他部分（如前端可视化、遥测系统）无缝集成。
 
 ## 1. 日志与调试 (Logging & Debugging)
 
@@ -214,7 +214,7 @@ new_g = Graph.from_dict(data_dict) # 从持久化数据恢复
 
 ## 6. 组件扩展指南 (Component Extension Guide)
 
-KONG 采用 **插件化架构**，所有算法模块（Orchestrator, Expander, Extractor 等）均可热插拔。新增一个组件只需遵循以下“四步走”流程。
+PRISM 采用 **插件化架构**，所有算法模块（Orchestrator, Expander, Extractor 等）均可热插拔。新增一个组件只需遵循以下“四步走”流程。
 
 ### 6.1 步聚一：确定组件类型与位置
 根据功能选择基类和目录：
@@ -254,7 +254,7 @@ class MyCustomExpander(BaseExpander):
 ```
 
 ### 6.3 步骤三：定义自描述元数据 (Critical!)
-这是 KONG **元数据驱动 UI** 的核心。你在这里定义的 schema 会自动变成前端的滑块和输入框。
+这是 PRISM **元数据驱动 UI** 的核心。你在这里定义的 schema 会自动变成前端的滑块和输入框。
 
 **必须实现 `@classmethod get_component_spec`**
 
@@ -310,7 +310,7 @@ class MyCustomExpander(BaseExpander):
 ```
 
 ### 6.5 自动发现
-KONG Server 启动时会自动扫描 `modules` 目录。
+PRISM Server 启动时会自动扫描 `modules` 目录。
 1.  保存你的 `.py` 文件。
 2.  运行 `./start.sh` 重启服务。
 3.  刷新 Web 控制台，你的新组件就会出现在列表中，参数面板也会自动生成。
@@ -362,7 +362,7 @@ class BaseValidator(ABC):
 ```
 
 ### 7.3 步骤三：注册组件类型 (Enable Discovery)
-KONG 的组件发现通过协议反射机制实现。为了让系统识别新的 "validator" 类型，你必须在协议层注册它。
+PRISM 的组件发现通过协议反射机制实现。为了让系统识别新的 "validator" 类型，你必须在协议层注册它。
 
 文件：`core/kgforge/protocols/interfaces.py`
 
@@ -382,13 +382,13 @@ class IValidator(IDescribable, ABC):
 
 ### 总结
 1.  **新增实现 (Impl)**：只需放文件，无需注册（已有类型）。
-2.  **新增类型 (Type)**：需创建目录 -> 定义基类 -> 在 `interfaces.py` 注册协议。 KONG 会全自动处理剩下的事情（扫描、分类、前端渲染）。
+2.  **新增类型 (Type)**：需创建目录 -> 定义基类 -> 在 `interfaces.py` 注册协议。 PRISM 会全自动处理剩下的事情（扫描、分类、前端渲染）。
 
 ---
 
 ## 8. 错误处理协议 (Structured Error Protocol)
 
-KONG v1.1 引入了结构化错误处理机制，所有后端 API (Python Service) 在发生预期内错误时，将返回统一的 JSON 格式，而非 500 Internal Server Error。
+PRISM v1.1 引入了结构化错误处理机制，所有后端 API (Python Service) 在发生预期内错误时，将返回统一的 JSON 格式，而非 500 Internal Server Error。
 
 ### 8.1 错误响应格式
 HTTP Status Code 将根据错误类型变化 (4xx/5xx)，但 Body 始终遵循以下结构：

@@ -1,6 +1,6 @@
-# ⚒️ KGForge (KONG Graph Forge): The Universal Research Engine
+# ⚒️ KGForge (PRISM Graph Forge): The Universal Research Engine
 
-`KGForge` is the algorithmic foundation of the KONG platform. It provides a standardized environment for implementing, observing, and orchestrating graph-based reasoning algorithms.
+`KGForge` is the algorithmic foundation of the PRISM platform. It provides a standardized environment for implementing, observing, and orchestrating graph-based reasoning algorithms.
 
 ## 🏗 Philosophy: Component-Agnostic Platforms
 

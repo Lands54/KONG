@@ -1,6 +1,6 @@
-# KONG Web Architecture (Frontend)
+# PRISM Web Architecture (Frontend)
 
-本文档描述了 **KONG Web UI** (React/TSX) 的架构设计。作为一个**元数据驱动 (Metadata-Driven)** 的科研控制台，它具有高度的动态性和可配置性，能够根据后端返回的组件规范自动渲染复杂的控制界面，而无需硬编码。
+本文档描述了 **PRISM Web UI** (React/TSX) 的架构设计。作为一个**元数据驱动 (Metadata-Driven)** 的科研控制台，它具有高度的动态性和可配置性，能够根据后端返回的组件规范自动渲染复杂的控制界面，而无需硬编码。
 
 ## 1. 核心架构图 (High-Level Architecture)
 

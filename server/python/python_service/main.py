@@ -6,7 +6,7 @@ Python FastAPI 服务
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from python_service.core.errors import KongError
+from python_service.core.errors import PrismError
 from contextlib import asynccontextmanager
 import sys
 import os
@@ -72,14 +72,14 @@ async def lifespan(app: FastAPI):
     yield  # 服务运行中
 
 app = FastAPI(
-    title="Dynamic Halting Research Framework API",
-    description="面向大语言模型的本体语义抽取与动态判停研究框架",
-    version="0.1.0",
+    title="PRISM: Platform for Reasoning, Inference, and Semantic Modeling",
+    description="专为大语言模型设计的科研级动态推理与语义建模框架",
+    version="2.0.0",
     lifespan=lifespan
 )
 
-@app.exception_handler(KongError)
-async def kong_exception_handler(request: Request, exc: KongError):
+@app.exception_handler(PrismError)
+async def prism_exception_handler(request: Request, exc: PrismError):
     return JSONResponse(
         status_code=exc.status_code,
         content=exc.to_dict()

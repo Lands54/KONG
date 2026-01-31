@@ -1,4 +1,4 @@
-# KONG Module Configuration
+# PRISM Module Configuration
 # -------------------------
 # 注意：该文件不再用于定义组件的可用性、默认值或预热设置。
 # 所有的组件发现与预热决策均已迁移至 SSOT (代码自省) 模式。

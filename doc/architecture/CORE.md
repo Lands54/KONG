@@ -1,6 +1,6 @@
-# KONG Server 架构文档
+# PRISM Server 架构文档
 
-本文档描述了 **KONG (Knowledge Oriented Neo-Graph)** 后端 Python 服务的整体架构。该服务采用 **Metadata-Driven（元数据驱动）** 和 **Event-Loop Optimized（事件循环优化）** 的设计哲学，旨在高效、并发地支撑复杂的大模型动态推理任务。
+本文档描述了 **PRISM (Platform for Reasoning, Inference, and Semantic Modeling)** 后端 Python 服务的整体架构。该服务采用 **Metadata-Driven（元数据驱动）** 和 **Event-Loop Optimized（事件循环优化）** 的设计哲学，旨在高效、并发地支撑复杂的大模型动态推理任务。
 
 ## 1. 核心设计图 (High-Level Architecture)
 

@@ -7,7 +7,7 @@ from kgforge.protocols.interfaces import META_REGISTRY, IPreloadable
 
 class ComponentEngine:
     """
-    KONG 组件引擎 (SSOT Engine)
+    PRISM 组件引擎 (SSOT Engine)
     统一管理扫描、发现、ID解析与动态工厂生成。
     """
     

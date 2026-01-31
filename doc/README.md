@@ -1,6 +1,6 @@
-# KONG (Knowledge Oriented Neo-Graph) Documentation
+# PRISM (Platform for Reasoning, Inference, and Semantic Modeling) Documentation
 
-欢迎阅读 KONG 项目文档。本项目旨在构建一个**动态、可解释、高并发**的大语言模型推理研究框架。
+欢迎阅读 PRISM 项目文档。本项目旨在构建一个**动态、可解释、高并发**的大语言模型推理研究框架。
 
 ## 🏛 架构概览 (Architecture)
 

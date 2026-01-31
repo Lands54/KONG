@@ -1,8 +1,8 @@
 from typing import Optional, Any, Dict
 
-class KongError(Exception):
+class PrismError(Exception):
     """
-    KONG Base Exception
+    PRISM Base Exception
     """
     def __init__(
         self, 
@@ -26,22 +26,22 @@ class KongError(Exception):
             }
         }
 
-class KongAuthError(KongError):
+class PrismAuthError(PrismError):
     """Authentication failed (e.g. invalid API Key)"""
     def __init__(self, message: str = "Authentication failed", details: Optional[Any] = None):
         super().__init__(message, code="AUTH_FAILED", status_code=401, details=details)
 
-class KongRateLimitError(KongError):
+class PrismRateLimitError(PrismError):
     """Rate limit exceeded"""
     def __init__(self, message: str = "Rate limit exceeded", details: Optional[Any] = None):
         super().__init__(message, code="RATE_LIMIT", status_code=429, details=details)
 
-class KongNetworkError(KongError):
+class PrismNetworkError(PrismError):
     """Network connection issues"""
     def __init__(self, message: str = "Network error", details: Optional[Any] = None):
         super().__init__(message, code="NETWORK_ERROR", status_code=503, details=details)
 
-class KongValidationError(KongError):
+class PrismValidationError(PrismError):
     """Invalid input parameters"""
     def __init__(self, message: str = "Validation failed", details: Optional[Any] = None):
         super().__init__(message, code="VALIDATION_ERROR", status_code=422, details=details)

@@ -9,7 +9,7 @@
 
 #### 之前（混乱）
 ```
-KONG/
+PRISM/
 ├── dynhalting/              # 核心库（命名不当）
 ├── backend/
 │   ├── python_service/
@@ -25,7 +25,7 @@ KONG/
 
 #### 之后（清晰）
 ```
-KONG/
+PRISM/
 ├── core/kgforge/            # 核心算法库（重命名）
 ├── server/
 │   ├── python/              # Python API

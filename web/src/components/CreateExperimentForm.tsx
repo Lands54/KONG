@@ -43,8 +43,8 @@ export default function CreateExperimentForm({ onSuccess, onCancel }: CreateExpe
   // Load presets list on mount
   React.useEffect(() => {
     const loadPresets = () => {
-      const keys = Object.keys(localStorage).filter(k => k.startsWith('kong_preset_'));
-      setPresets(keys.map(k => k.replace('kong_preset_', '')));
+      const keys = Object.keys(localStorage).filter(k => k.startsWith('prism_preset_'));
+      setPresets(keys.map(k => k.replace('prism_preset_', '')));
     };
     loadPresets();
   }, []);
@@ -57,7 +57,7 @@ export default function CreateExperimentForm({ onSuccess, onCancel }: CreateExpe
       componentParams: formData.componentParams,
       orchestratorParams: formData.orchestratorParams
     };
-    localStorage.setItem(`kong_preset_${presetName}`, JSON.stringify(presetData));
+    localStorage.setItem(`prism_preset_${presetName}`, JSON.stringify(presetData));
     setPresets(prev => [...new Set([...prev, presetName])]);
     setPresetName('');
     setShowPresetDialog(false);
@@ -65,7 +65,7 @@ export default function CreateExperimentForm({ onSuccess, onCancel }: CreateExpe
 
   const handleLoadPreset = (name: string) => {
     try {
-      const raw = localStorage.getItem(`kong_preset_${name}`);
+      const raw = localStorage.getItem(`prism_preset_${name}`);
       if (!raw) return;
       const data = JSON.parse(raw);
       setFormData(prev => ({
@@ -82,7 +82,7 @@ export default function CreateExperimentForm({ onSuccess, onCancel }: CreateExpe
   };
 
   const handleDeletePreset = (name: string) => {
-    localStorage.removeItem(`kong_preset_${name}`);
+    localStorage.removeItem(`prism_preset_${name}`);
     setPresets(prev => prev.filter(p => p !== name));
   };
 

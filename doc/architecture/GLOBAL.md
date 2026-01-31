@@ -1,12 +1,12 @@
-# KONG System Architecture (Research Grade)
+# PRISM System Architecture (Research Grade)
 
-**Knowledge Oriented Neo-Graph (KONG)** 是一个专为大语言模型 (LLM) 设计的科研级动态推理框架。本文档采用 **C4 Model** 的思想，通过分层视图详细阐述系统的架构设计。
+**Platform for Reasoning, Inference, and Semantic Modeling (PRISM)** 是一个专为大语言模型 (LLM) 设计的科研级动态推理框架。本文档采用 **C4 Model** 的思想，通过分层视图详细阐述系统的架构设计。
 
 ## 1. 系统全景图 (L1: System Context)
 
-这是一个宏观的视图，展示了 KONG 系统如何与外部世界（研究人员、LLM Provider）进行交互。
+这是一个宏观的视图，展示了 PRISM 系统如何与外部世界（研究人员、LLM Provider）进行交互。
 
-![KONG System Architecture Diagram](./kong_system_architecture_diagram_1769748943601.png)
+![PRISM System Architecture Diagram](./kong_system_architecture_diagram_1769748943601.png)
 
 *(注意：系统架构图已生成并链接)*
 
@@ -24,11 +24,11 @@
 
 ```mermaid
 C4Container
-    title Container Diagram for KONG System
+    title Container Diagram for PRISM System
 
     Person(researcher, "Researcher", "Conducts experiments on LLM reasoning")
     
-    Container_Boundary(kong, "KONG Framework") {
+    Container_Boundary(kong, "PRISM Framework") {
         Container(web_app, "Web Console", "React, TypeScript", "Metadata-Driven UI for config & visualization")
         Container(node_api, "Data Steward", "Node.js, Express", "Orchestrates jobs, manages data persistence")
         Container(python_api, "Inference Engine", "Python, FastAPI", "Executes dynamic reasoning algorithms (Orchestrators)")

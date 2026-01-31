@@ -1,7 +1,7 @@
-# KONG Design System: Scientific Dashboard
+# PRISM Design System: Scientific Dashboard
 
 ## 1. Design Philosophy
-The KONG frontend is designed to feel like a **High-Precision Scientific Instrument** (e.g., an oscilloscope, a flight controller, or an advanced IDE). Unlike traditional business applications that prioritize "friendliness" and "softness", KONG priorities **Data Density**, **Axiomatic Structure**, and **Cold Precision**.
+The PRISM frontend is designed to feel like a **High-Precision Scientific Instrument** (e.g., an oscilloscope, a flight controller, or an advanced IDE). Unlike traditional business applications that prioritize "friendliness" and "softness", PRISM priorities **Data Density**, **Axiomatic Structure**, and **Cold Precision**.
 
 ## 2. Visual Core (The "DNA")
 

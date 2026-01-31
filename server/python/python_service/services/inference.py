@@ -12,7 +12,7 @@ from kgforge.models import Graph
 from schemas.graph_schema import graph_to_dict
 from python_service.core.factory import UnifiedFactory
 from kgforge.components.base import TaskCancelledError
-from python_service.core.errors import KongAuthError, KongRateLimitError
+from python_service.core.errors import PrismAuthError, PrismRateLimitError
 from python_service.core.context import set_experiment_id, clear_experiment_id, get_current_stats, get_current_logs
 import openai
 import sys
@@ -105,9 +105,9 @@ class InferenceEngine:
             logger.warning(f"Task {experiment_id} cancelled by user.")
             return {"status": "cancelled", "message": "Task cancelled by user."}
         except openai.AuthenticationError as e:
-            raise KongAuthError(message=str(e), details=str(e))
+            raise PrismAuthError(message=str(e), details=str(e))
         except openai.RateLimitError as e:
-            raise KongRateLimitError(message=str(e), details=str(e))
+            raise PrismRateLimitError(message=str(e), details=str(e))
         except Exception as e:
             logger.error(f"Inference Pipeline Error: {e}")
             raise RuntimeError(f"Pipeline failure: {str(e)}") from e

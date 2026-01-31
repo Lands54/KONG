@@ -1,4 +1,4 @@
-# 🦍 KONG (Knowledge Oriented Neo-Graph)
+# 🦍 PRISM (Platform for Reasoning, Inference, and Semantic Modeling)
 
 > **面向大语言模型 (LLM) 的多样化科研实验平台**
 > *A Diverse Research Platform for LLM Reasoning & Knowledge Engineering.*
@@ -6,23 +6,23 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/status-Research%20Preview-orange)](https://github.com/your-repo)
 
-**KONG** 不仅仅是一个知识图谱构建工具，它是一个**开放的科研实验平台**。旨在填补非结构化文本、大语言模型 (LLM) 与结构化知识推理之间的鸿沟。
+**PRISM** 不仅仅是一个知识图谱构建工具，它是一个**开放的科研实验平台**。旨在填补非结构化文本、大语言模型 (LLM) 与结构化知识推理之间的鸿沟。
 
-与传统的单一任务框架不同，KONG 提供了一个高度灵活的**动态决策环境**。它天然支持 **"Think-on-Graph"**、迭代式扩展 (Iterative Expansion) 和多模式编排。无论是动态判停 (Dynamic Halting)、多智能体辩论 (Multi-Agent Debate) 还是混合推理路径研究，KONG 都能为您提供一个开箱即用、高度可观测的实验底座。
+与传统的单一任务框架不同，PRISM 提供了一个高度灵活的**动态决策环境**。它天然支持 **"Think-on-Graph"**、迭代式扩展 (Iterative Expansion) 和多模式编排。无论是动态判停 (Dynamic Halting)、多智能体辩论 (Multi-Agent Debate) 还是混合推理路径研究，PRISM 都能为您提供一个开箱即用、高度可观测的实验底座。
 
 ---
 
 ## 🌟 核心特性 (Key Features)
 
 ### 1. 🧠 动态编排 (Dynamic Orchestration)
-告别死板的 `Extract -> Store` 流程。KONG 引入了 **Orchestrator** 概念，允许自定义复杂的推理循环：
+告别死板的 `Extract -> Store` 流程。PRISM 引入了 **Orchestrator** 概念，允许自定义复杂的推理循环：
 *   **Top-Down**: 目标驱动的图扩展 (Expander)。
 *   **Bottom-Up**: 基于文本的知识抽取 (Extractor)。
 *   **Hybrid**: 混合编排，支持动态判停和自我修正。
 
 ### 2. 🎨 元数据驱动 UI (Metadata-Driven UI)
 **后端改算法，前端零代码。**
-KONG 采用先进的协议自省机制。Python 后端定义的组件参数 (Schema) 会自动映射为 React 前端的动态表单。研究人员在调整算法超参数（如 `temperature`, `threshold`）时，无需触碰任何前端代码。
+PRISM 采用先进的协议自省机制。Python 后端定义的组件参数 (Schema) 会自动映射为 React 前端的动态表单。研究人员在调整算法超参数（如 `temperature`, `threshold`）时，无需触碰任何前端代码。
 
 ### 3. 🔬 科研级可观测性 (Research-Grade Observability)
 *   **时光倒流**: 完整记录推理的每一步 (Trace) 和中间图状态 (Intermediate Graphs)，前端支持回放。
@@ -37,7 +37,7 @@ KONG 采用先进的协议自省机制。Python 后端定义的组件参数 (Sch
 
 ## 🏗 系统架构 (Architecture)
 
-KONG 采用现代化的分层架构，确保灵活性与性能的平衡。
+PRISM 采用现代化的分层架构，确保灵活性与性能的平衡。
 
 ![System Architecture](doc/architecture/kong_system_architecture_diagram_1769748943601.png)
 
@@ -113,7 +113,7 @@ DEFAULT_MODEL=openai/gpt-4-turbo
 
 ## 🛠 扩展指南 (Contributing)
 
-KONG 提供了极致的扩展能力，**甚至支持自定义全新的组件类型**（如Validators, Summarizers），且**无需修改前端代码**。
+PRISM 提供了极致的扩展能力，**甚至支持自定义全新的组件类型**（如Validators, Summarizers），且**无需修改前端代码**。
 
 1.  **添加组件 (Add Component)**: 在 `core/kgforge/components/<category>/modules/` 下新建 `.py` 文件，继承对应基类。
 2.  **添加类型 (Add Type)**: 在 `core/kgforge/protocols/interfaces.py` 中定义新的 Interface，系统会自动扫描并分类。
@@ -127,4 +127,4 @@ KONG 提供了极致的扩展能力，**甚至支持自定义全新的组件类�
 ## 📄 许可证 (License)
 
 本项目采用 **MIT License** 开源。
-Copyright © 2024-2026 KONG Research Team.
+Copyright © 2024-2026 PRISM Research Team.

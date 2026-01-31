@@ -1,6 +1,6 @@
-# KONG Architecture Deep-Dive
+# PRISM Architecture Deep-Dive
 
-KONG implements a **Recursive Knowledge Graph Construction** process with **Dynamic Halting**. This document explains the technical details of the data flow and component interactions.
+PRISM implements a **Recursive Knowledge Graph Construction** process with **Dynamic Halting**. This document explains the technical details of the data flow and component interactions.
 
 ## 🔄 The Research Loop (Motherboard Logic)
 
@@ -26,7 +26,7 @@ The algorithm operates in a discrete loop, as implemented in `DynamicHaltingOrch
 
 ## 🧩 Component Specification
 
-Every "Slot" in KONG is defined by a `component_spec`, allowing the UI and API to understand its parameters dynamically.
+Every "Slot" in PRISM is defined by a `component_spec`, allowing the UI and API to understand its parameters dynamically.
 
 | Slot | Responsibility | Implementation Example |
 | :--- | :--- | :--- |
@@ -68,7 +68,7 @@ sequenceDiagram
 
 ## 📉 Advanced Halting: Node-Level Evaluation
 
-In the modern KONG framework, the decision to stop is not just a timer. It depends on the **Value Convergence**:
+In the modern PRISM framework, the decision to stop is not just a timer. It depends on the **Value Convergence**:
 
 - **$\Delta$ Semantic Coverage**: How much *new* information did the last expansion add?
 - **Structural Resilience**: Would the graph break if this node were removed? (ASI)
@@ -76,4 +76,4 @@ In the modern KONG framework, the decision to stop is not just a timer. It depen
 
 ---
 
-*This architecture ensures that KONG remains a flexible platform for testing new theories of autonomous knowledge management.*
+*This architecture ensures that PRISM remains a flexible platform for testing new theories of autonomous knowledge management.*

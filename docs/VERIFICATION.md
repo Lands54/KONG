@@ -12,7 +12,7 @@
 
 #### 启动日志
 ```
-[Main] 已加载 .env 文件: /Users/qiuboyu/CodeLearning/KONG/.env
+[Main] 已加载 .env 文件: /Users/qiuboyu/CodeLearning/PRISM/.env
 INFO:     Started server process [2593]
 INFO:     Waiting for application startup.
 服务启动：开始基于配置进行组件预热 (Component Warm-up)...
@@ -63,7 +63,7 @@ export PYTHONPATH="${PROJECT_ROOT}/core:${PROJECT_ROOT}/server/python:${PYTHONPA
 ### ✅ 目录结构验证
 
 ```
-KONG/
+PRISM/
 ├── core/kgforge/          ✅ 核心库
 ├── server/
 │   ├── python/            ✅ Python API

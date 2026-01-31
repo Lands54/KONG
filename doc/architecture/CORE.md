@@ -19,10 +19,10 @@ graph TD
 
     subgraph "Execution Pipeline (KGForge)"
         ShadowInstance --> Orchestrator
-        Orchestrator -->|Dynamic Call| Expander
-        Orchestrator -->|Dynamic Call| Extractor
-        Orchestrator -->|Dynamic Call| Fusion
-        Expander -->|LLM API| ModelProvider["OpenRouter / Local LLM"]
+        Orchestrator -->|Dynamic Call| ComponentA["Component A (e.g. Expander)"]
+        Orchestrator -->|Dynamic Call| ComponentB["Component B (e.g. Extractor)"]
+        Orchestrator -->|Dynamic Call| ComponentC["Component C (e.g. Validator)"]
+        ComponentA -->|External API| Provider["API Provider (LLM, etc.)"]
     end
 
     subgraph "Observability"

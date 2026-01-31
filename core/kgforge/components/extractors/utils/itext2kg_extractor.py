@@ -3,7 +3,7 @@ IText2KG / ATOM 抽取器适配器
 
 设计原则：
 - 依赖注入：LLM/embeddings 实例由外部（Factory/ModelLoader）构建后传入
-- 单一职责：只负责调用 itext2kg 并转换为 dynhalting.Graph
+- 单一职责：只负责调用 itext2kg 并转换为 kgforge Graph
 - 可测试性：不直接读取环境变量，所有依赖可 mock
 
 参考：
@@ -166,7 +166,7 @@ class IText2KGExtractor:
     设计：
     - 通过依赖注入接收已构建好的 LLM 和 embeddings 实例
     - 不直接读取环境变量或配置文件
-    - 只负责调用 itext2kg 并将结果转换为 dynhalting.Graph
+    - 只负责调用 itext2kg 并将结果转换为 Graph
     """
 
     def __init__(
@@ -238,7 +238,7 @@ class IText2KGExtractor:
             text: 输入文本
             
         Returns:
-            dynhalting.Graph 实例
+            Graph 实例
         """
         self._initialize()
 

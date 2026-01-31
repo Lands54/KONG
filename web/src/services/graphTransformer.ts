@@ -20,12 +20,19 @@ export function graphToCytoscape(graph: any): any[] {
     const metadata = node.metadata || {};
 
     // 状态优先级：顶层 > state.status > attributes.status > metadata.status
-    const status = node.status || state.status || attributes.status || metadata.status || 'LOOP';
+    const status = node.status || state.status || attributes.status || metadata.status || '';
 
     const nodeData: any = {
       id: node.id,
       label: node.label || attributes.label || 'Unknown',
       status: status,
+
+      // --- 动态视觉属性提取 (用于平台驱动的样式映射) ---
+      color: attributes.color || state.color || metadata.color,
+      borderColor: attributes.borderColor || state.borderColor || metadata.borderColor,
+      opacity: attributes.opacity ?? state.opacity ?? metadata.opacity,
+      borderStyle: attributes.borderStyle || state.borderStyle || metadata.borderStyle,
+      borderWidth: attributes.borderWidth ?? state.borderWidth ?? metadata.borderWidth,
 
       // 保存完整数据槽，供详情面板使用
       attributes: attributes,
@@ -33,7 +40,7 @@ export function graphToCytoscape(graph: any): any[] {
       state: state,
       metadata: metadata,
 
-      // 提取核心指标给 Cytoscape 的样式映射（如节点颜色、工具提示）
+      // 提取核心指标给工具提示中使用
       ablationValue: metrics.ablation_value ?? metadata.ablation_value,
       uncertainty: metrics.uncertainty ?? metadata.uncertainty,
       confidence: metrics.confidence ?? metadata.confidence,

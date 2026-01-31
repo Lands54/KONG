@@ -1,47 +1,36 @@
-# 🧠 dynhalting: The Core Research Engine
+# ⚒️ KGForge (KONG Graph Forge): The Universal Research Engine
 
-`dynhalting` is the algorithmic heart of the KONG workstation. it implements the **Dynamic Halting Loop**, a recursive process of graph construction, fusion, and evaluation.
+`KGForge` is the algorithmic foundation of the KONG platform. It provides a standardized environment for implementing, observing, and orchestrating graph-based reasoning algorithms.
 
-## 🛠 Architecture: The Motherboard & Slots
+## 🏗 Philosophy: Component-Agnostic Platforms
 
-The engine follows a strict **Interface Segregation** principle. The central orchestrator acts as a "Motherboard," providing slots for various functional components.
+KGForge treats research algorithms as **Pluggable Orchestrators**. It does not dictate the goal of your research (e.g., whether it's for knowledge extraction, multi-agent debate, or risk analysis). Instead, it provides the "Motherboard" where different components can be slotted in.
 
-### 1. The Slots (Protocols)
-Defined in `dynhalting/protocols/interfaces.py`:
-- **`IExtractor`**: Bottom-Up evidence extraction (e.g., REBEL, OpenIE).
-- **`IExpander`**: Top-Down goal decomposition (e.g., GPT-4, Llama-3).
-- **`IFusion`**: Semantic alignment and graph merging.
-- **`IHaltingStrategy`**: Value-based decision making.
+### 1. The Motherboard & Slots (Protocols)
+Defined in `core/kgforge/protocols/`:
+- **Universal Slots**: Standard interfaces for common operations like `IExtractor` (Parsing), `IExpander` (Generation), and `IFusion` (De-duplication).
+- **Extensible Logic**: Developers can define NEW protocols that the platform will automatically recognize and render.
 
-### 2. The Components
-Located in `dynhalting/components/`:
-- **`extractors/`**: REBEL-based triplet extraction from raw text.
-- **`expanders/`**: LLM-driven recursive goal expansion.
-- **`fusions/`**: Semantic deduplication and node alignment using embeddings.
-- **`halting/`**: Advanced halting strategies including ASI (Ablation-based), PSG, SCD, and UCB.
+### 2. Standardized Data Infrastructure
+KGForge provides a robust, research-grade data model (`core/kgforge/models/`):
+- **`GraphElement` (Node/Edge)**: Features a unique **Slot Protocol** (`_attrs`, `_metrics`, `_state`, `_metadata`) to prevent data pollution.
+- **`Execution Status`**: A first-class citizen in the platform, allowing any component to signal its lifecycle state (e.g., `PROCESSING`, `TERMINATED`, `ACTION_REQUIRED`) which is automatically handled by the observation layer.
+- **`ExperimentResult`**: A high-fidelity container for tracing every decision, metric, and graph state change during execution.
 
-### 3. The Orchestrator (Motherboard)
-- **`DynamicHaltingOrchestrator`**: The primary implementation of the research loop. It coordinates the data flow:
-  1. `Extractor` -> $G_{Bottom-Up}$
-  2. `Expander` -> $G_{Top-Down}$
-  3. `Fusion`($G_{B}$, $G_{T}$) -> $G_{Fused}$
-  4. `Halting`($G_{F}$) -> Decide (Loop/Halt/Drop/HITL)
+## 🔌 Using the Platform
 
-## 📊 Data Models: Recursive System Graph
+### Strategy 1: Ready-to-use Orchestrators
+KGForge ships with reference implementations (like `DynamicHaltingOrchestrator`) that demonstrate how to use multiple components in a closed-loop reasoning process.
 
-KONG uses a specialized graph model (`dynhalting/models/graph.py`) designed for research:
-- **`Node`**: Contains rich metadata, including `ablation_value`, `uncertainty`, and `confidence`. Supports recursive `subgraph` references.
-- **`Edge`**: Semantic relations with weights and evidence mapping.
-- **`ExperimentResult`**: A comprehensive container for traces, metrics, and snapshots of every iteration.
+### Strategy 2: Custom Algorithm Development
+To build a new reasoning system:
+1. **Define your Protocol**: Create an interface in `protocols`.
+2. **Implement your Components**: Add classes in `components`.
+3. **Orchestrate**: Create an `Orchestrator` to define the high-level logic.
 
-## ⚙️ Advanced Halting Strategies
-
-The new halting architecture supports **Node-Level Evaluation**:
-- **ASI (Ablation-based Structural Importance)**: Estimates node value by simulating its removal from the system.
-- **PSG (Probabilistic Subgraph)**: Evaluates the probability of a node being part of the "ground truth" ontology.
-- **SCD (Semantic Consistency Degradation)**: Detects when additional information stops contributing to semantic clarity.
-- **UCB (Upper Confidence Bound)**: Balances exploration of new nodes with exploitation of known high-value structures.
+## 🎨 Observability: From Data to Vision
+The platform is designed for **Data-Driven Visualization**. By setting standard visual hints (like `color`, `borderColor`, or `opacity`) on any node or edge, the platform's UI will automatically reflect the state of your algorithm without requiring you to write a single line of frontend code.
 
 ---
 
-*For developers: To extend KONG, implement a new component class and ensure it inherits from the appropriate Protocol. Use the `ComponentManager` for registration.*
+*KGForge is built for researchers who want to focus on 'The Algorithm', not the boilerplate.*

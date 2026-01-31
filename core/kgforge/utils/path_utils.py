@@ -8,10 +8,10 @@ from typing import Optional
 
 def get_library_root() -> str:
     """
-    获取 dynhalting 库的根目录
+    获取 kgforge 库的根目录
     """
-    # 当前文件在 dynhalting/core/utils/path_utils.py
-    # 返回 dynhalting/
+    # 当前文件在 kgforge/utils/path_utils.py
+    # 返回 kgforge/
     return os.path.abspath(os.path.join(os.path.dirname(__file__), '../../'))
 
 def get_resource_path(relative_path: str) -> str:

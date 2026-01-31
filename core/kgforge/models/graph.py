@@ -16,7 +16,7 @@ class GraphElement:
         self._metrics: Dict[str, float] = {}
         self._state: Dict[str, Any] = {}
         self._metadata: Dict[str, Any] = {}
-        self._exec_status: str = "LOOP" # 核心执行状态，作为 Pipeline 级的一等公民
+        self._exec_status: str = "" # 核心执行状态，作为 Pipeline 级的一等公民
 
     # --- Attributes Slot (身份特征) ---
     def attr(self, key: str, default: Any = None) -> Any:

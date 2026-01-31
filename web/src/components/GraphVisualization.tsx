@@ -92,73 +92,59 @@ export default function GraphVisualization({ graph, experimentId, onNodeClick }:
             'corner-radius': '4',
             'transition-property': 'background-color, border-color, border-width',
             'transition-duration': 150
-          }
+          } as any
         },
         // 仅当节点显式包含 width/height 数据时才应用覆盖
         {
           selector: 'node[width]',
           style: {
             'width': 'data(width)'
-          }
+          } as any
         },
         {
           selector: 'node[height]',
           style: {
             'height': 'data(height)'
-          }
+          } as any
+        },
+        {
+          selector: 'node[color]',
+          style: {
+            'background-color': 'data(color)'
+          } as any
+        },
+        {
+          selector: 'node[borderColor]',
+          style: {
+            'border-color': 'data(borderColor)'
+          } as any
+        },
+        {
+          selector: 'node[borderWidth]',
+          style: {
+            'border-width': 'data(borderWidth)'
+          } as any
+        },
+        {
+          selector: 'node[borderStyle]',
+          style: {
+            'border-style': 'data(borderStyle)'
+          } as any
+        },
+        {
+          selector: 'node[opacity]',
+          style: {
+            'opacity': 'data(opacity)'
+          } as any
         },
         {
           selector: 'node:selected',
           style: {
-            'border-width': 2,
-            'border-color': '#1e293b',
-            'background-color': '#f1f5f9'
-          }
-        },
-        {
-          selector: 'node[status="HALT-ACCEPT"]',
-          style: {
-            'border-color': '#10b981',
-            'border-width': 2,
-            'background-color': '#f0fdf4'
-          }
-        },
-        {
-          selector: 'node[status="LOOP"]',
-          style: {
-            'border-color': '#f59e0b',
-            'border-width': 2,
-            'background-color': '#fffbeb'
-          }
-        },
-        {
-          selector: 'node[status="HALT-DROP"]',
-          style: {
-            'background-color': '#f8fafc',
-            'border-color': '#cbd5e1',
-            'color': '#94a3b8',
-            'opacity': 0.6,
-            'border-width': 1.5,
-            'border-style': 'dashed'
-          }
-        },
-        {
-          selector: 'node[status="LOOP"]',
-          style: {
-            'background-color': '#ffffff',
-            'border-color': '#e2e8f0',
-            'border-width': 1.5
-          }
-        },
-        {
-          selector: 'node[status="HITL"]',
-          style: {
-            'background-color': '#fffbeb',
-            'border-color': '#f59e0b',
-            'border-width': 2,
-            'color': '#92400e'
-          }
-        },
+            'border-width': 3,
+            'border-color': '#6366f1'
+          } as any
+        }
+        ,
         {
           selector: 'edge',
           style: {
